@@ -114,7 +114,7 @@ const handleSend = () => {
 .send-btn {
   flex-shrink: 0;
   padding: 8px 22px;
-  background: var(--color-primary);
+  background: #07c160;
   color: white;
   border: none;
   border-radius: 6px;
@@ -126,7 +126,7 @@ const handleSend = () => {
 }
 
 .send-btn:hover {
-  background: var(--color-primary-dark);
+  background: #06ad56;
 }
 
 .send-btn:active {

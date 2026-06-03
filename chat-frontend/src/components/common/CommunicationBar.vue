@@ -176,9 +176,7 @@ const loadEmojis = async () => {
 
 /** 发送表情 @param emoji 表情对象 @returns void */
 const sendEmoji = (emoji: EmojiVO) => {
-  console.log('发送表情:', emoji)
   emit('sendEmoji', emoji.url)
-  ElMessage.success('表情已发送')
 }
 
 /** 表情名称输入对话框显示状态 */
@@ -221,7 +219,7 @@ const deleteEmoji = async (emojiId: number) => {
 }
 
 /** 暴露方法供父组件调用 */
-defineExpose({ toggleExpand, openEmojiPicker })
+defineExpose({ toggleExpand, openEmojiPicker, startRecord, stopRecord, cancelRecord })
 
 /** 组件卸载时清理录音资源 */
 onUnmounted(() => {

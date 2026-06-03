@@ -15,6 +15,10 @@
           <el-image :src="message.content" :preview-src-list="[message.content]" fit="cover" class="message-image" />
         </div>
 
+        <div v-else-if="message.messageType === 3 && !message.isRecalled" class="emoji-message">
+          <el-image :src="message.content" fit="contain" class="emoji-image" />
+        </div>
+
         <VoiceMessage v-else-if="message.messageType === 4 && !message.isRecalled" :url="message.content"
           :duration="message.duration" />
 
@@ -138,8 +142,17 @@ const handleRecall = async () => {
 
 .message-image {
   max-width: 240px;
-  border-radius: 14px;
-  border: 1px solid var(--border-color-lighter);
+  border-radius: 4px;
+}
+
+.emoji-message {
+  line-height: 0;
+}
+
+.emoji-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 2px;
 }
 
 .message-bubble:hover .recall-btn {

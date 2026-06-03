@@ -190,8 +190,8 @@ const sendVoice = (url: string, duration: number) => {
 /** 发送表情 @param url 表情地址 @returns void */
 const sendEmoji = (url: string) => {
   if (!props.friend?.userId) return
-  addLocalMessage(url, 2)
-  websocketService.sendMessage(props.friend.userId, url, 2)
+  addLocalMessage(url, 3)
+  websocketService.sendMessage(props.friend.userId, url, 3)
 }
 
 /** 发起语音通话 @param toUserId 目标用户 ID @returns void */

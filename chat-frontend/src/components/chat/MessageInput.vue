@@ -26,8 +26,23 @@
         ></textarea>
       </div>
 
+      <button
+        class="icon-btn voice-btn"
+        :class="{ recording: isRecording }"
+        title="按住说话"
+        @mousedown="startVoice"
+        @mouseup="stopVoice"
+        @mouseleave="cancelVoice"
+        @touchstart.prevent="startVoice"
+        @touchend.prevent="stopVoice"
+        @touchcancel.prevent="cancelVoice"
+      >
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+      </button>
+
       <button class="send-btn" @click="handleSend">发送</button>
     </div>
+    <div v-if="isRecording" class="recording-bar">松开发送 · 滑动取消</div>
   </div>
 </template>
 
@@ -55,8 +70,10 @@ const emit = defineEmits<{
 const content = ref('')
 /** 通信栏组件引用 */
 const commBarRef = ref<InstanceType<typeof CommunicationBar>>()
-/** 通信栏展开状态（由 CommunicationBar 控制） */
+/** 通信栏展开状态 */
 const commExpanded = ref(false)
+/** 是否正在录音 */
+const isRecording = ref(false)
 /** 文本域元素引用 */
 const textareaRef = ref<HTMLTextAreaElement>()
 
@@ -94,6 +111,26 @@ const openEmoji = () => {
 const toggleBar = () => {
   commBarRef.value?.toggleExpand()
   commExpanded.value = !commExpanded.value
+}
+
+/** 开始录音 */
+const startVoice = () => {
+  commBarRef.value?.startRecord()
+  isRecording.value = true
+}
+
+/** 停止录音并发送 */
+const stopVoice = () => {
+  if (!isRecording.value) return
+  commBarRef.value?.stopRecord()
+  isRecording.value = false
+}
+
+/** 取消录音 */
+const cancelVoice = () => {
+  if (!isRecording.value) return
+  commBarRef.value?.cancelRecord()
+  isRecording.value = false
 }
 </script>
 
@@ -178,7 +215,7 @@ const toggleBar = () => {
 .send-btn {
   flex-shrink: 0;
   padding: 8px 22px;
-  background: var(--color-primary);
+  background: #07c160;
   color: white;
   border: none;
   border-radius: 6px;
@@ -190,10 +227,23 @@ const toggleBar = () => {
 }
 
 .send-btn:hover {
-  background: var(--color-primary-dark);
+  background: #06ad56;
 }
 
 .send-btn:active {
   transform: scale(0.96);
+}
+
+.voice-btn.recording {
+  color: var(--color-danger);
+  background: #fef2f2;
+}
+
+.recording-bar {
+  text-align: center;
+  padding: 4px 0 10px;
+  font-size: 11px;
+  color: var(--color-danger);
+  background: #fef2f2;
 }
 </style>
