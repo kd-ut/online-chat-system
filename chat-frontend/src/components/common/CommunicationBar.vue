@@ -64,6 +64,17 @@ let startTime: number = 0
 /** 麦克风流 */
 let mediaStream: MediaStream | null = null
 
+/** true 表示 startRecord 已进入且尚未完成全部清理（包括 onstop 触发） */
+let _recordingRequested = false
+/** true 表示 stopRecord 在 MediaRecorder 就绪之前已被调用，就绪后应立即停止并发送 */
+let _pendingSendStop = false
+/** true 表示 cancelRecord 在 MediaRecorder 就绪之前已被调用，就绪后应直接清理 */
+let _pendingCancelStop = false
+/** true 表示 cancelRecord 被调用，onstop 中应跳过上传直接清理 */
+let _isCancelling = false
+/** true 表示用户主动松手发送，即便时长 < 1s 也应发送 */
+let _forceSend = false
+
 /** 切换工具栏展开/收起 @returns void */
 const toggleExpand = () => { isExpanded.value = !isExpanded.value }
 
@@ -88,10 +99,74 @@ const getSupportedMimeType = () => {
   return types.find(t => MediaRecorder.isTypeSupported(t)) || ''
 }
 
+/** 同步清理 mediaStream 的资源，用于 pending-stop/权限失败等路径 */
+const cleanupPending = () => {
+  mediaStream?.getTracks().forEach(t => t.stop())
+  mediaStream = null
+  _recordingRequested = false
+  isRecording.value = false
+}
+
+/** MediaRecorder.onstop 的统一回调：区分正常完成 / 取消 / 时长不足 */
+const handleRecordingStop = async () => {
+  if (recordingTimer) {
+    clearInterval(recordingTimer)
+    recordingTimer = null
+  }
+
+  if (_isCancelling) {
+    _isCancelling = false
+    _forceSend = false
+    mediaStream?.getTracks().forEach(t => t.stop())
+    mediaStream = null
+    _recordingRequested = false
+    return
+  }
+
+  const duration = Math.floor((Date.now() - startTime) / 1000)
+  if (duration < 1 && !_forceSend) {
+    ElMessage.warning('录音时间太短')
+    mediaStream?.getTracks().forEach(t => t.stop())
+    mediaStream = null
+    _recordingRequested = false
+    return
+  }
+  _forceSend = false
+
+  const mimeType = getSupportedMimeType() || 'audio/webm'
+  const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : 'webm'
+  const blob = new Blob(audioChunks, { type: mimeType })
+  const file = new File([blob], `voice_${Date.now()}.${ext}`, { type: mimeType })
+
+  try {
+    const url = await uploadVoiceApi(file)
+    emit('sendVoice', url, duration)
+  } catch { /* error already shown by response interceptor */ }
+
+  mediaStream?.getTracks().forEach(t => t.stop())
+  mediaStream = null
+  _recordingRequested = false
+}
+
 /** 开始录音 @returns Promise<void> */
 const startRecord = async () => {
+  if (_recordingRequested) return
+
+  _recordingRequested = true
+  _pendingSendStop = false
+  _pendingCancelStop = false
+  _isCancelling = false
+  _forceSend = false
+  isRecording.value = true
+
   try {
     mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+
+    if (_pendingCancelStop) {
+      cleanupPending()
+      return
+    }
+
     const mimeType = getSupportedMimeType()
     const options: any = mimeType ? { mimeType } : {}
     mediaRecorder = new MediaRecorder(mediaStream, options)
@@ -99,55 +174,64 @@ const startRecord = async () => {
     startTime = Date.now()
     recordDuration.value = 0
 
+    mediaRecorder.ondataavailable = (e) => { audioChunks.push(e.data) }
+    mediaRecorder.onstop = handleRecordingStop
+
+    mediaRecorder.start(100)
+
     recordingTimer = setInterval(() => {
       recordDuration.value = Math.floor((Date.now() - startTime) / 1000)
       if (recordDuration.value >= 60) stopRecord()
     }, 200) as unknown as number
 
-    mediaRecorder.ondataavailable = (e) => { audioChunks.push(e.data) }
-    mediaRecorder.onstop = async () => {
-      const duration = Math.floor((Date.now() - startTime) / 1000)
-      if (duration < 1) {
-        ElMessage.warning('录音时间太短')
-        mediaStream?.getTracks().forEach(t => t.stop())
-        mediaStream = null
-        return
-      }
-      const mimeType = getSupportedMimeType() || 'audio/webm'
-      const ext = mimeType.includes('mp4') ? 'mp4' : mimeType.includes('ogg') ? 'ogg' : 'webm'
-      const blob = new Blob(audioChunks, { type: mimeType })
-      const file = new File([blob], `voice_${Date.now()}.${ext}`, { type: mimeType })
-      try {
-        const url = await uploadVoiceApi(file)
-        emit('sendVoice', url, duration)
-      } catch { /* error already shown by response interceptor */ }
-      mediaStream?.getTracks().forEach(t => t.stop())
-      mediaStream = null
+    if (_pendingSendStop) {
+      if (recordingTimer) { clearInterval(recordingTimer); recordingTimer = null }
+      mediaRecorder.stop()
     }
-    mediaRecorder.start(100)
-    isRecording.value = true
-  } catch { ElMessage.error('无法获取麦克风权限') }
+  } catch {
+    isRecording.value = false
+    _recordingRequested = false
+    ElMessage.error('无法获取麦克风权限')
+  }
 }
 
-/** 停止录音 @returns void */
+/** 停止录音并发送 @returns void */
 const stopRecord = () => {
-  if (mediaRecorder && isRecording.value && mediaRecorder.state !== 'inactive') {
+  if (!_recordingRequested) return
+
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    if (recordingTimer) {
+      clearInterval(recordingTimer)
+      recordingTimer = null
+    }
     mediaRecorder.stop()
-    isRecording.value = false
-    if (recordingTimer) clearInterval(recordingTimer)
+  } else {
+    _pendingSendStop = true
+    _forceSend = true
   }
+
+  isRecording.value = false
 }
 
 /** 取消录音 @returns void */
 const cancelRecord = () => {
-  if (mediaRecorder && isRecording.value && mediaRecorder.state !== 'inactive') {
+  if (!_recordingRequested) return
+  if (_pendingSendStop || _pendingCancelStop) return
+
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    _isCancelling = true
+    _forceSend = false
+    if (recordingTimer) {
+      clearInterval(recordingTimer)
+      recordingTimer = null
+    }
     mediaRecorder.stop()
-    isRecording.value = false
-    if (recordingTimer) clearInterval(recordingTimer)
-    ElMessage.info('已取消录音')
-    mediaStream?.getTracks().forEach(t => t.stop())
-    mediaStream = null
+  } else {
+    _pendingCancelStop = true
   }
+
+  ElMessage.info('已取消录音')
+  isRecording.value = false
 }
 
 /** 发起语音通话 @returns void */
@@ -223,8 +307,20 @@ defineExpose({ toggleExpand, openEmojiPicker, startRecord, stopRecord, cancelRec
 
 /** 组件卸载时清理录音资源 */
 onUnmounted(() => {
-  if (mediaRecorder && isRecording.value) mediaRecorder.stop()
-  if (mediaStream) mediaStream.getTracks().forEach(t => t.stop())
+  _isCancelling = true
+  if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+    mediaRecorder.stop()
+  }
+  if (mediaStream) {
+    mediaStream.getTracks().forEach(t => t.stop())
+    mediaStream = null
+  }
+  if (recordingTimer) {
+    clearInterval(recordingTimer)
+    recordingTimer = null
+  }
+  _recordingRequested = false
+  isRecording.value = false
 })
 </script>
 
