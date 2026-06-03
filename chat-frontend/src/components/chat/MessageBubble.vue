@@ -76,14 +76,14 @@ const handleRecall = async () => {
 <style scoped>
 .message-item {
   display: flex;
-  gap: 14px;
-  margin-bottom: 16px;
-  padding: 0 12px;
-  animation: messageIn 0.3s ease;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding: 0 16px;
+  animation: messageIn 0.25s ease;
 }
 
 @keyframes messageIn {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -103,35 +103,33 @@ const handleRecall = async () => {
 
 .message-info {
   display: flex;
-  gap: 10px;
-  font-size: 12px;
+  gap: 8px;
+  font-size: 11px;
   color: var(--text-secondary);
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .message-bubble {
-  background: var(--bg-color-white);
-  padding: 12px 20px;
-  border-radius: 22px;
+  background: #ffffff;
+  color: #1f2937;
+  padding: 10px 16px;
+  border-radius: 6px;
   word-wrap: break-word;
-  line-height: 1.6;
-  font-size: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  line-height: 1.55;
+  font-size: 14px;
   position: relative;
-  border-bottom-left-radius: 6px;
+  border: 1px solid #ececec;
 }
 
 .message-item:not(.own) .message-bubble {
-  border-bottom-left-radius: 6px;
-  border-top-left-radius: 22px;
+  border-top-left-radius: 2px;
 }
 
 .message-item.own .message-bubble {
-  background: linear-gradient(135deg, #7c6df0, #a08aff);
-  color: white;
-  border-bottom-right-radius: 6px;
-  border-bottom-left-radius: 22px;
-  border-top-right-radius: 6px;
+  background: #95ec69;
+  color: #1f2937;
+  border: none;
+  border-top-right-radius: 2px;
 }
 
 .image-message {

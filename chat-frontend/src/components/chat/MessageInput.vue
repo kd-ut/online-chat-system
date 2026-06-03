@@ -1,19 +1,38 @@
 <template>
   <div class="message-area">
-    <div class="message-input">
-      <el-input v-model="content" type="textarea" :rows="2" placeholder="请输入消息..." @keydown="handleKeydown" />
-      <div class="input-actions">
-        <el-button type="primary" @click="handleSend">发送</el-button>
-      </div>
-    </div>
-    <CommunicationBar :current-chat-user-id="currentChatUserId" @send-image="(url) => $emit('sendImage', url)"
+    <CommunicationBar ref="commBarRef" :current-chat-user-id="currentChatUserId" @send-image="(url) => $emit('sendImage', url)"
       @send-voice="(url, duration) => $emit('sendVoice', url, duration)" @send-emoji="(url) => $emit('sendEmoji', url)"
       @start-voice-call="(id) => $emit('startVoiceCall', id)" @start-video-call="(id) => $emit('startVideoCall', id)" />
+
+    <div class="input-row">
+      <div class="left-btns">
+        <button class="icon-btn emoji-btn" title="表情" @click="openEmoji">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+        </button>
+        <button class="icon-btn toggle-btn" :class="{ active: commExpanded }" title="更多" @click="toggleBar">
+          <svg viewBox="0 0 24 24" width="22" height="22" :class="{ rotated: commExpanded }" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </button>
+      </div>
+
+      <div class="textarea-wrap">
+        <textarea
+          v-model="content"
+          class="chat-textarea"
+          rows="1"
+          placeholder="请输入消息..."
+          @keydown="handleKeydown"
+          @input="autoResize"
+          ref="textareaRef"
+        ></textarea>
+      </div>
+
+      <button class="send-btn" @click="handleSend">发送</button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-/** 消息输入组件，提供文本输入和通信工具栏 @component */
+/** 消息输入组件，WeChat 风格布局：左侧表情/更多按钮 + 中间输入框 + 右侧发送按钮 @component */
 import { ref } from 'vue'
 import CommunicationBar from '@/components/common/CommunicationBar.vue'
 
@@ -34,8 +53,14 @@ const emit = defineEmits<{
 
 /** 输入框内容 */
 const content = ref('')
+/** 通信栏组件引用 */
+const commBarRef = ref<InstanceType<typeof CommunicationBar>>()
+/** 通信栏展开状态（由 CommunicationBar 控制） */
+const commExpanded = ref(false)
+/** 文本域元素引用 */
+const textareaRef = ref<HTMLTextAreaElement>()
 
-/** 键盘事件处理：Enter 发送，Shift+Enter 换行 @param e 键盘事件 */
+/** 键盘事件处理：Enter 发送，Shift+Enter 换行 */
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault()
@@ -43,56 +68,132 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 }
 
-/** 发送文本消息 @returns void */
+/** 自动调整文本域高度 */
+const autoResize = () => {
+  const el = textareaRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+}
+
+/** 发送文本消息 */
 const handleSend = () => {
   if (!content.value.trim()) return
   emit('send', content.value)
   content.value = ''
+  const el = textareaRef.value
+  if (el) { el.style.height = 'auto' }
+}
+
+/** 打开表情选择器 */
+const openEmoji = () => {
+  commBarRef.value?.openEmojiPicker()
+}
+
+/** 切换更多功能栏 */
+const toggleBar = () => {
+  commBarRef.value?.toggleExpand()
+  commExpanded.value = !commExpanded.value
 }
 </script>
 
 <style scoped>
 .message-area {
-  border-top: 1px solid var(--border-color-lighter);
+  border-top: 1px solid var(--border-color);
   background: var(--bg-color-white);
   flex-shrink: 0;
 }
 
-.message-input {
-  padding: 14px 16px;
+.input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 14px;
 }
 
-.message-input :deep(.el-textarea__inner) {
-  border: 2px solid transparent;
+.left-btns {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding-bottom: 4px;
+}
+
+.icon-btn {
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-regular);
+  transition: all 0.15s;
+}
+
+.icon-btn:hover {
+  background: var(--bg-color);
+  color: var(--color-primary);
+}
+
+.icon-btn.active {
+  color: var(--color-primary);
+}
+
+.icon-btn svg.rotated {
+  transform: rotate(45deg);
+  transition: transform 0.2s;
+}
+
+.textarea-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-textarea {
+  width: 100%;
+  border: none;
   outline: none;
-  background-color: #f5f5f5;
-  border-radius: 14px !important;
-  transition: all 0.4s;
-  padding: 12px 16px;
+  background: var(--bg-color);
+  border-radius: 6px;
+  padding: 10px 12px;
   resize: none;
   font-size: 14px;
   line-height: 1.5;
+  font-family: inherit;
+  transition: background 0.15s;
+  max-height: 120px;
 }
 
-.message-input :deep(.el-textarea__inner:hover) {
-  border: 2px solid var(--color-primary-light);
-  background-color: white;
+.chat-textarea:focus {
+  background: #eef0ff;
 }
 
-.message-input :deep(.el-textarea__inner:focus) {
-  border: 2px solid var(--color-primary);
-  box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
-  background-color: white;
+.chat-textarea::placeholder {
+  color: var(--text-placeholder);
 }
 
-.input-actions {
-  margin-top: 10px;
-  text-align: right;
+.send-btn {
+  flex-shrink: 0;
+  padding: 8px 22px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 1px;
 }
 
-.input-actions .el-button {
-  border-radius: 12px !important;
-  padding: 8px 24px !important;
-  font-weight: 600 !important;
+.send-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.send-btn:active {
+  transform: scale(0.96);
 }
 </style>

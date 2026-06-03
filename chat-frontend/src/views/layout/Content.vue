@@ -19,8 +19,5 @@ import AdminView from '@/views/admin/AdminView.vue'
   flex: 1;
   overflow: hidden;
   background: var(--bg-color-white);
-  border: 3px solid #b3d9ff;
-  border-radius: 24px;
-  box-shadow: var(--box-shadow-base);
 }
 </style>

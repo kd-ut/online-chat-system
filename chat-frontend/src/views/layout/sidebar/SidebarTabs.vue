@@ -65,9 +65,10 @@ const handleTabClick = (tab: any) => {
 <style scoped>
 .sidebar-tabs {
   display: flex;
-  padding: 12px 16px;
-  gap: 8px;
-  background: var(--bg-color);
+  padding: 8px 12px;
+  gap: 4px;
+  background: var(--bg-color-white);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .tab-item {
@@ -75,86 +76,69 @@ const handleTabClick = (tab: any) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 14px 6px;
+  gap: 4px;
+  padding: 10px 4px;
   cursor: pointer;
   position: relative;
-  font-size: 14px;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-  border-radius: 16px;
+  font-size: 13px;
+  color: var(--text-regular);
+  transition: all 0.15s ease;
+  border-radius: 8px;
   background: transparent;
-  border: 1px solid rgba(180, 200, 230, 0.25);
+  border: none;
 }
 
 .tab-item:hover {
   color: var(--color-primary);
-  background: #f0edff;
-  border-color: rgba(108, 92, 231, 0.2);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(108, 92, 231, 0.08);
+  background: #f5f6ff;
 }
 
-.tab-item:active {
-  transform: scale(0.93);
-  box-shadow: 0 2px 6px rgba(108, 92, 231, 0.15);
-}
+.tab-item:active { transform: scale(0.96); }
 
 .tab-item.active {
   color: var(--color-primary);
-  background: var(--bg-color-white);
+  background: #eef0ff;
   font-weight: 600;
-  border-color: rgba(108, 92, 231, 0.3);
-  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.15);
-  transform: translateY(-1px);
 }
 
 .tab-item .el-icon {
-  font-size: 20px;
-  transition: transform 0.2s ease;
+  font-size: 18px;
+  transition: transform 0.15s ease;
 }
 
-.tab-item:hover .el-icon {
-  transform: scale(1.2);
-}
-
-.tab-item.active .el-icon {
-  transform: scale(1.1);
-}
+.tab-item:hover .el-icon { transform: scale(1.1); }
 
 .badge {
   position: absolute;
-  top: 2px;
-  right: 10px;
+  top: 0;
+  right: 4px;
   background: var(--color-danger);
   color: white;
   font-size: 10px;
-  padding: 0 6px;
-  border-radius: 10px;
-  min-width: 18px;
-  height: 18px;
-  line-height: 18px;
+  padding: 0 5px;
+  border-radius: 8px;
+  min-width: 16px;
+  height: 16px;
+  line-height: 16px;
   text-align: center;
   font-weight: 600;
-  box-shadow: 0 2px 6px rgba(255, 118, 117, 0.3);
 }
 
 .friend-badge {
   position: absolute;
-  top: -4px;
-  right: 6px;
-  min-width: 18px;
-  height: 18px;
+  top: 0;
+  right: 4px;
+  min-width: 16px;
+  height: 16px;
   padding: 0 5px;
   background: var(--color-danger);
   color: white;
   font-size: 10px;
   font-weight: 600;
-  border-radius: 9px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  box-shadow: 0 2px 6px rgba(255, 118, 117, 0.35);
 }
 </style>

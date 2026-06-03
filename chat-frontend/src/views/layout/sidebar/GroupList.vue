@@ -62,40 +62,38 @@ const formatTime = (time: string) => {
 
 <style scoped>
 .group-list {
-  padding: 12px;
+  padding: 8px;
 }
 
 .group-header-actions {
-  padding: 0 4px 12px 4px;
+  padding: 0 4px 10px 4px;
 }
 
 .group-header-actions .el-button {
-  border-radius: 14px !important;
-  font-weight: 600 !important;
+  border-radius: var(--border-radius-small) !important;
+  font-weight: 500 !important;
   width: 100%;
-  height: 46px;
-  font-size: 15px !important;
+  height: 40px;
+  font-size: 14px !important;
 }
 
 .group-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px;
-  border-radius: 14px;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--border-radius-small);
   cursor: pointer;
-  transition: all 0.2s;
-  margin: 2px 4px;
+  transition: background 0.15s;
+  margin: 1px 4px;
 }
 
 .group-item:hover {
-  background: #f3f0ff;
-  transform: translateX(2px);
+  background: var(--bg-color);
 }
 
 .group-item.active {
-  background: linear-gradient(135deg, #f3f0ff, #e8e3ff);
-  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.08);
+  background: #eef0ff;
 }
 
 .group-avatar {
@@ -113,21 +111,20 @@ const formatTime = (time: string) => {
 
 .unread-badge {
   position: absolute;
-  top: -6px;
-  right: -8px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
+  top: -5px;
+  right: -6px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
   background: var(--color-danger);
   color: white;
   font-size: 10px;
   font-weight: 600;
-  border-radius: 9px;
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
-  box-shadow: 0 2px 6px rgba(255, 118, 117, 0.35);
   border: 2px solid var(--bg-color-white);
 }
 
@@ -137,14 +134,14 @@ const formatTime = (time: string) => {
 }
 
 .group-name {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
   color: var(--text-primary);
 }
 
 .group-item.active .group-name {
-  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .group-desc {

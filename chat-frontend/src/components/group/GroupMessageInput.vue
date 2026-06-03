@@ -1,18 +1,26 @@
 <template>
-  <div class="message-input">
-    <el-input v-model="content" type="textarea" :rows="3"
-      :disabled="muted"
-      :placeholder="muted ? '你已被禁言' : '请输入群消息...'"
-      @keydown="handleKeydown" />
-    <div class="input-actions">
-      <el-tag v-if="muted" type="danger" effect="dark" size="small">你已被禁言</el-tag>
-      <el-button v-else type="primary" @click="handleSend">发送 (Enter)</el-button>
+  <div class="message-area">
+    <div class="input-row">
+      <div class="textarea-wrap">
+        <textarea
+          v-model="content"
+          class="chat-textarea"
+          rows="1"
+          :disabled="muted"
+          :placeholder="muted ? '你已被禁言' : '请输入群消息...'"
+          @keydown="handleKeydown"
+          @input="autoResize"
+          ref="textareaRef"
+        ></textarea>
+      </div>
+      <el-tag v-if="muted" type="danger" effect="dark" size="small" class="muted-tag">禁言</el-tag>
+      <button v-else class="send-btn" @click="handleSend">发送</button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-/** 群聊消息输入组件，支持禁言状态 @component */
+/** 群聊消息输入组件，WeChat 风格布局，支持禁言状态 @component */
 import { ref } from 'vue'
 
 /** 组件属性：是否被禁言 */
@@ -27,8 +35,10 @@ const emit = defineEmits<{
 
 /** 输入框内容 */
 const content = ref('')
+/** 文本域元素引用 */
+const textareaRef = ref<HTMLTextAreaElement>()
 
-/** 键盘事件处理：Enter 发送，Shift+Enter 换行 @param e 键盘事件 */
+/** 键盘事件处理：Enter 发送，Shift+Enter 换行 */
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Enter' && !e.shiftKey) {
     e.preventDefault()
@@ -36,52 +46,95 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 }
 
-/** 发送消息 @returns void */
+/** 自动调整文本域高度 */
+const autoResize = () => {
+  const el = textareaRef.value
+  if (!el) return
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+}
+
+/** 发送消息 */
 const handleSend = () => {
   if (!content.value.trim()) return
   emit('send', content.value)
   content.value = ''
+  const el = textareaRef.value
+  if (el) { el.style.height = 'auto' }
 }
 </script>
 
 <style scoped>
-.message-input {
-  padding: 14px 16px;
-  border-top: 1px solid var(--border-color-lighter);
+.message-area {
+  border-top: 1px solid var(--border-color);
   background: var(--bg-color-white);
+  flex-shrink: 0;
 }
 
-.message-input :deep(.el-textarea__inner) {
-  border: 2px solid transparent;
+.input-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  padding: 10px 14px;
+}
+
+.textarea-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.chat-textarea {
+  width: 100%;
+  border: none;
   outline: none;
-  background-color: #f5f5f5;
-  border-radius: 14px !important;
-  transition: all 0.4s;
-  padding: 12px 16px;
+  background: var(--bg-color);
+  border-radius: 6px;
+  padding: 10px 12px;
   resize: none;
   font-size: 14px;
   line-height: 1.5;
+  font-family: inherit;
+  transition: background 0.15s;
+  max-height: 120px;
 }
 
-.message-input :deep(.el-textarea__inner:hover) {
-  border: 2px solid var(--color-primary-light);
-  background-color: white;
+.chat-textarea:focus {
+  background: #eef0ff;
 }
 
-.message-input :deep(.el-textarea__inner:focus) {
-  border: 2px solid var(--color-primary);
-  box-shadow: 0 0 0 4px rgba(108, 92, 231, 0.15);
-  background-color: white;
+.chat-textarea:disabled {
+  background: #fef0f0;
+  color: var(--text-secondary);
 }
 
-.input-actions {
-  margin-top: 10px;
-  text-align: right;
+.chat-textarea::placeholder {
+  color: var(--text-placeholder);
 }
 
-.input-actions .el-button {
-  border-radius: 12px !important;
-  padding: 8px 24px !important;
-  font-weight: 600 !important;
+.send-btn {
+  flex-shrink: 0;
+  padding: 8px 22px;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 1px;
+}
+
+.send-btn:hover {
+  background: var(--color-primary-dark);
+}
+
+.send-btn:active {
+  transform: scale(0.96);
+}
+
+.muted-tag {
+  flex-shrink: 0;
+  margin-bottom: 4px;
 }
 </style>

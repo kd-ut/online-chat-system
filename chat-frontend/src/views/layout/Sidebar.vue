@@ -223,9 +223,7 @@ onMounted(() => {
   flex-shrink: 0;
   position: relative;
   z-index: 20;
-  border: 3px solid #b3d9ff;
-  border-radius: 24px;
-  box-shadow: var(--box-shadow-base);
+  border-right: 1px solid var(--border-color);
   overflow: hidden;
 }
 
@@ -245,6 +243,6 @@ onMounted(() => {
 }
 
 .sidebar-content:hover::-webkit-scrollbar-thumb {
-  background: var(--text-secondary);
+  background: var(--text-placeholder);
 }
 </style>

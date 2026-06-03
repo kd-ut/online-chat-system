@@ -52,7 +52,7 @@
 .orb-1 {
   width: 600px;
   height: 600px;
-  background: #6c5ce7;
+  background: #5b6abf;
   top: -15%;
   left: -10%;
   animation: orbFloat1 20s ease-in-out infinite;
@@ -61,7 +61,7 @@
 .orb-2 {
   width: 500px;
   height: 500px;
-  background: #a29bfe;
+  background: #8b9cf7;
   bottom: -10%;
   right: -5%;
   animation: orbFloat2 25s ease-in-out infinite;
@@ -70,7 +70,7 @@
 .orb-3 {
   width: 400px;
   height: 400px;
-  background: #fd79a8;
+  background: #e87461;
   top: 40%;
   right: 20%;
   animation: orbFloat3 18s ease-in-out infinite;
@@ -79,7 +79,7 @@
 .orb-4 {
   width: 350px;
   height: 350px;
-  background: #6c5ce7;
+  background: #5b6abf;
   bottom: 20%;
   left: 15%;
   opacity: 0.3;

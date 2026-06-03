@@ -69,22 +69,17 @@ onMounted(() => {
 
 <style scoped>
 .app-container {
-  height: calc(100vh - 24px);
-  width: calc(100% - 24px);
-  margin: 12px;
-  background: linear-gradient(135deg, #e8ecf4 0%, #f0f2f8 50%, #e4e8f2 100%);
-  padding: 18px;
+  height: 100vh;
+  width: 100%;
+  background: var(--bg-color);
   overflow: hidden;
-  border: 5px solid #b3d9ff;
-  border-radius: 28px;
-  box-shadow: 0 0 24px rgba(179, 217, 255, 0.45), 0 0 60px rgba(179, 217, 255, 0.15);
 }
 
 .main-layout {
   display: flex;
   height: 100%;
   width: 100%;
-  gap: 14px;
+  gap: 0;
 }
 
 .right-panel {
@@ -93,11 +88,12 @@ onMounted(() => {
   flex-direction: column;
   min-width: 0;
   overflow: hidden;
-  gap: 14px;
+  background: var(--bg-color);
 }
 
 .main-layout.is-resizing {
   cursor: col-resize;
+  user-select: none;
 }
 
 .main-layout.is-resizing .sidebar,
@@ -106,28 +102,18 @@ onMounted(() => {
 }
 
 .resize-handle {
-  width: 14px;
+  width: 6px;
   flex-shrink: 0;
   cursor: col-resize;
   position: relative;
   z-index: 30;
-  margin: 0 -7px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.resize-handle::before {
-  content: '';
-  width: 4px;
-  height: 48px;
   background: transparent;
-  border-radius: 4px;
   transition: background 0.2s;
 }
 
-.resize-handle:hover::before,
-.main-layout.is-resizing .resize-handle::before {
+.resize-handle:hover,
+.main-layout.is-resizing .resize-handle {
   background: var(--color-primary-light);
+  opacity: 0.4;
 }
 </style>

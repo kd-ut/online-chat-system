@@ -13,8 +13,8 @@ html, body, #app {
 }
 
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -22,13 +22,12 @@ html, body, #app {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #d0d0d0;
+  background: #d1d5db;
   border-radius: 10px;
-  transition: background 0.3s;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b0b0b0;
+  background: #9ca3af;
 }
 
 .el-dialog {
@@ -42,13 +41,13 @@ html, body, #app {
 }
 
 .el-dialog__title {
-  font-size: 18px !important;
+  font-size: 17px !important;
   font-weight: 600 !important;
   color: var(--text-primary) !important;
 }
 
 .el-dialog__body {
-  padding: 24px 28px !important;
+  padding: 20px 24px !important;
 }
 
 .el-dialog__footer {
@@ -61,63 +60,60 @@ html, body, #app {
 
 .el-drawer__header {
   margin-bottom: 0 !important;
-  padding: 20px 24px !important;
-  font-size: 18px !important;
+  padding: 18px 22px !important;
+  font-size: 17px !important;
   font-weight: 600 !important;
 }
 
 .el-button {
-  border-radius: var(--border-radius-base) !important;
+  border-radius: var(--border-radius-small) !important;
   transition: all var(--transition-duration) var(--transition-timing) !important;
+  font-weight: 500 !important;
 }
 
 .el-button--primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  background: var(--color-primary) !important;
   border: none !important;
 }
 
 .el-button--primary:hover {
-  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)) !important;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(108, 92, 231, 0.3) !important;
+  background: var(--color-primary-dark) !important;
+  box-shadow: 0 2px 8px rgba(91, 106, 191, 0.35) !important;
 }
 
 .el-button--primary:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.97);
 }
 
 .el-button--success {
-  background: linear-gradient(135deg, var(--color-success), #00a381) !important;
+  background: var(--color-success) !important;
   border: none !important;
 }
 
 .el-button--success:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(0, 184, 148, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(32, 163, 158, 0.35) !important;
 }
 
 .el-button--danger {
-  background: linear-gradient(135deg, var(--color-danger), #e17055) !important;
+  background: var(--color-danger) !important;
   border: none !important;
 }
 
 .el-button--danger:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(255, 118, 117, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(232, 116, 97, 0.35) !important;
 }
 
 .el-button--warning {
-  background: linear-gradient(135deg, var(--color-warning), #f0a830) !important;
+  background: var(--color-warning) !important;
   border: none !important;
 }
 
 .el-button--warning:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 15px rgba(253, 203, 110, 0.3) !important;
+  box-shadow: 0 2px 8px rgba(240, 160, 80, 0.35) !important;
 }
 
 .el-input__wrapper {
-  border-radius: 12px !important;
+  border-radius: var(--border-radius-small) !important;
   box-shadow: 0 0 0 1px var(--border-color) inset !important;
   transition: all var(--transition-duration) var(--transition-timing) !important;
 }
@@ -127,49 +123,49 @@ html, body, #app {
 }
 
 .el-select .el-input__wrapper {
-  border-radius: 12px !important;
+  border-radius: var(--border-radius-small) !important;
 }
 
 .el-avatar {
-  border: 2px solid var(--color-primary-light);
+  border: 2px solid var(--border-color-light);
   transition: all var(--transition-duration) var(--transition-timing);
 }
 
 .el-avatar:hover {
-  border-color: var(--color-primary);
-  transform: scale(1.05);
+  border-color: var(--color-primary-light);
+  transform: scale(1.04);
 }
 
 .el-badge__content {
   border: 2px solid white !important;
-  border-radius: 20px !important;
-  font-size: 11px !important;
-  padding: 0 6px !important;
-  height: 20px !important;
-  line-height: 16px !important;
+  border-radius: 10px !important;
+  font-size: 10px !important;
+  padding: 0 5px !important;
+  height: 18px !important;
+  line-height: 14px !important;
 }
 
 .el-dropdown-menu {
-  border-radius: var(--border-radius-base) !important;
+  border-radius: var(--border-radius-small) !important;
   box-shadow: var(--box-shadow-base) !important;
-  border: none !important;
-  padding: 6px !important;
+  border: 1px solid var(--border-color-light) !important;
+  padding: 4px !important;
 }
 
 .el-dropdown-menu__item {
-  border-radius: 10px !important;
-  padding: 8px 16px !important;
-  margin: 2px 0 !important;
-  font-size: 14px !important;
+  border-radius: 6px !important;
+  padding: 8px 14px !important;
+  margin: 1px 0 !important;
+  font-size: 13px !important;
 }
 
 .el-dropdown-menu__item:hover {
-  background: #f3f0ff !important;
+  background: #f0f1ff !important;
   color: var(--color-primary) !important;
 }
 
 .el-tabs__item {
-  font-size: 14px !important;
+  font-size: 13px !important;
   font-weight: 500 !important;
   transition: all var(--transition-duration) var(--transition-timing) !important;
 }
@@ -179,55 +175,53 @@ html, body, #app {
 }
 
 .el-tabs__active-bar {
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light)) !important;
-  height: 3px !important;
-  border-radius: 3px !important;
+  background: var(--color-primary) !important;
+  height: 2px !important;
+  border-radius: 2px !important;
 }
 
 .el-tag {
-  border-radius: 10px !important;
-  padding: 4px 12px !important;
+  border-radius: 6px !important;
+  padding: 3px 10px !important;
   font-weight: 500 !important;
 }
 
 .el-switch__core {
-  border-radius: 12px !important;
+  border-radius: 10px !important;
 }
 
 .el-message {
-  margin: 20px 0 0 !important;
-  border-radius: 14px !important;
+  margin: 16px 0 0 !important;
+  border-radius: var(--border-radius-small) !important;
   border: none !important;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
-  min-width: 280px !important;
-  padding: 14px 20px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+  min-width: 260px !important;
+  padding: 12px 18px !important;
 }
-.el-message:first-child {
-  margin: 0 !important;
-}
+.el-message:first-child { margin: 0 !important; }
 .el-message--success {
-  background: linear-gradient(135deg, #e8faf5, #d4f5ed) !important;
-  color: #00a381 !important;
+  background: #ecfdf5 !important;
+  color: #065f46 !important;
 }
 .el-message--warning {
-  background: linear-gradient(135deg, #fef9e7, #fef3d5) !important;
-  color: #d4a017 !important;
+  background: #fffbeb !important;
+  color: #92400e !important;
 }
 .el-message--error {
-  background: linear-gradient(135deg, #fde8e8, #fcd5d4) !important;
-  color: #e17055 !important;
+  background: #fef2f2 !important;
+  color: #991b1b !important;
 }
 .el-message--info {
-  background: linear-gradient(135deg, #f3f0ff, #e8e3ff) !important;
-  color: #6c5ce7 !important;
+  background: #eff0ff !important;
+  color: #3730a3 !important;
 }
 
 .el-overlay {
-  background-color: rgba(0, 0, 0, 0.4) !important;
+  background-color: rgba(0, 0, 0, 0.35) !important;
 }
 
 .el-empty__image {
-  width: 120px !important;
+  width: 100px !important;
 }
 
 .el-input-number.is-controls-right .el-input__wrapper {
@@ -235,30 +229,30 @@ html, body, #app {
 }
 
 .el-popover {
-  border-radius: var(--border-radius-base) !important;
+  border-radius: var(--border-radius-small) !important;
   box-shadow: var(--box-shadow-base) !important;
-  border: none !important;
+  border: 1px solid var(--border-color-light) !important;
 }
 
 .el-card {
-  border-radius: 16px !important;
-  border: 1px solid var(--border-color-lighter) !important;
+  border-radius: var(--border-radius-base) !important;
+  border: 1px solid var(--border-color-light) !important;
   transition: all var(--transition-duration) var(--transition-timing) !important;
 }
 
 .el-card__header {
-  padding: 16px 24px !important;
-  border-bottom: 1px solid var(--border-color-lighter) !important;
+  padding: 14px 20px !important;
+  border-bottom: 1px solid var(--border-color-light) !important;
   font-weight: 600 !important;
-  font-size: 16px !important;
+  font-size: 15px !important;
 }
 
 .el-card__body {
-  padding: 20px 24px !important;
+  padding: 18px 20px !important;
 }
 
 .el-table {
-  border-radius: 12px !important;
+  border-radius: var(--border-radius-small) !important;
   overflow: hidden !important;
 }
 
@@ -269,7 +263,7 @@ html, body, #app {
 }
 
 .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
-  background: #fafaff !important;
+  background: #fafbfd !important;
 }
 
 .el-pagination {
@@ -279,70 +273,55 @@ html, body, #app {
 }
 
 .el-pagination button, .el-pagination .el-pager li {
-  border-radius: 10px !important;
-  min-width: 36px !important;
-  height: 36px !important;
+  border-radius: 6px !important;
+  min-width: 32px !important;
+  height: 32px !important;
 }
 
 .el-pager li.is-active {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  background: var(--color-primary) !important;
   color: white !important;
   font-weight: 600 !important;
 }
 
 .section-card {
-  border-radius: 16px !important;
-  border: none !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  border-radius: var(--border-radius-base) !important;
+  border: 1px solid var(--border-color-light) !important;
 }
 
 .beautiful-dialog .el-dialog {
-  border-radius: 20px !important;
+  border-radius: var(--border-radius-large) !important;
 }
 
-/* 确认/提示弹框共用样式 */
-.beautiful-confirm .el-dialog__header {
-  display: none;
-}
+.beautiful-confirm .el-dialog__header { display: none; }
 
 .beautiful-confirm {
-  border-radius: 24px !important;
-  width: 720px !important;
+  border-radius: 20px !important;
+  width: 480px !important;
 }
 
 .beautiful-confirm .el-dialog__body {
-  padding: 8px 24px 12px;
+  padding: 8px 20px 12px;
 }
 
 .confirm-body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  padding: 20px 12px 0;
+  gap: 12px;
+  padding: 16px 8px 0;
 }
 
-.confirm-icon .el-icon {
-  display: flex;
-}
-
-.confirm-icon.warning svg {
-  color: var(--color-warning);
-}
-
-.confirm-icon.danger svg {
-  color: var(--color-danger);
-}
-
-.confirm-icon.info svg {
-  color: var(--color-primary);
-}
+.confirm-icon .el-icon { display: flex; }
+.confirm-icon.warning svg { color: var(--color-warning); }
+.confirm-icon.danger svg { color: var(--color-danger); }
+.confirm-icon.info svg { color: var(--color-primary); }
 
 .confirm-message {
-  font-size: 16px;
+  font-size: 15px;
   color: var(--text-primary);
   text-align: center;
-  line-height: 1.8;
+  line-height: 1.7;
   max-width: 90%;
   font-weight: 500;
 }
@@ -350,41 +329,38 @@ html, body, #app {
 .confirm-footer {
   display: flex;
   justify-content: center;
-  gap: 14px;
+  gap: 12px;
   padding: 4px 0 8px;
 }
 
 .btn-cancel {
-  min-width: 120px;
-  padding: 10px 24px !important;
-  border-radius: 14px !important;
-  font-weight: 600 !important;
-  font-size: 15px !important;
-  letter-spacing: 0.5px;
+  min-width: 100px;
+  padding: 8px 20px !important;
+  border-radius: var(--border-radius-small) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
 }
 
 .btn-confirm {
-  min-width: 120px;
-  padding: 10px 24px !important;
-  border-radius: 14px !important;
-  font-weight: 600 !important;
-  font-size: 15px !important;
-  letter-spacing: 0.5px;
+  min-width: 100px;
+  padding: 8px 20px !important;
+  border-radius: var(--border-radius-small) !important;
+  font-weight: 500 !important;
+  font-size: 14px !important;
 }
 
 .el-dialog__headerbtn {
-  width: 36px;
-  height: 36px;
-  top: 16px;
-  right: 16px;
-  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  top: 14px;
+  right: 14px;
+  font-size: 16px;
   border-radius: 50%;
   transition: all 0.2s;
 }
 
 .el-dialog__headerbtn:hover {
-  background: #f0edff;
-  transform: scale(1.1);
+  background: #f0f1ff;
 }
 
 .el-dialog__headerbtn .el-dialog__close {
@@ -401,11 +377,22 @@ html, body, #app {
 }
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(20px); }
+  from { opacity: 0; transform: translateX(16px); }
   to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #f8f8f8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
 }

@@ -6,7 +6,10 @@
       </el-avatar>
       <div class="friend-detail">
         <div class="name">{{ friend?.remark || friend?.nickname }}</div>
-        <div class="status">{{ friend?.isOnline ? '在线' : '离线' }}</div>
+        <div class="status">
+          <span class="status-dot" :class="{ online: friend?.isOnline }"></span>
+          {{ friend?.isOnline ? '在线' : '离线' }}
+        </div>
       </div>
     </div>
     <div class="actions">
@@ -32,24 +35,26 @@ defineEmits<{ (e: 'download'): void }>()
 
 <style scoped>
 .chat-header {
-  padding: 14px 24px;
-  border-bottom: 1px solid var(--border-color-lighter);
+  padding: 0 20px;
+  height: var(--header-height);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: var(--bg-color-white);
   position: relative;
   z-index: 5;
+  flex-shrink: 0;
 }
 
 .friend-info {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .friend-detail .name {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-primary);
   margin-bottom: 2px;
@@ -58,7 +63,19 @@ defineEmits<{ (e: 'download'): void }>()
 .friend-detail .status {
   font-size: 12px;
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.status-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--text-placeholder);
+}
+.status-dot.online {
+  background: var(--color-success);
 }
 
 .actions {
@@ -68,26 +85,24 @@ defineEmits<{ (e: 'download'): void }>()
 }
 
 .download-trigger {
-  height: 38px;
-  padding: 0 18px !important;
-  border-radius: 12px !important;
-  font-size: 13px !important;
-  font-weight: 600 !important;
-  gap: 6px;
-  border: 2px solid var(--border-color) !important;
+  height: 34px;
+  padding: 0 14px !important;
+  border-radius: var(--border-radius-small) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  gap: 5px;
+  border: 1px solid var(--border-color) !important;
   color: var(--text-regular) !important;
-  transition: all 0.25s !important;
+  transition: all 0.15s !important;
 }
 
 .download-trigger:hover {
   border-color: var(--color-primary) !important;
   color: var(--color-primary) !important;
-  background: #f3f0ff !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(108, 92, 231, 0.15);
+  background: #f5f6ff !important;
 }
 
 .download-trigger:active {
-  transform: translateY(0) scale(0.97);
+  transform: scale(0.97);
 }
 </style>

@@ -1,11 +1,5 @@
 <template>
   <div class="communication-bar" :class="{ expanded: isExpanded }">
-    <div class="toggle-btn" @click="toggleExpand">
-      <el-icon :size="24">
-        <component :is="isExpanded ? 'ArrowDown' : 'ArrowUp'" />
-      </el-icon>
-    </div>
-
     <Toolbar :is-expanded="isExpanded" @open-image-upload="openImageUpload" @start-record="startRecord"
       @stop-record="stopRecord" @cancel-record="cancelRecord" @start-voice-call="startVoiceCall"
       @start-video-call="startVideoCall" @open-emoji-picker="openEmojiPicker" />
@@ -28,7 +22,6 @@
 /** 通信工具栏组件，提供图片/语音/表情/通话等功能的集成面板 @component */
 import { ref, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { ArrowUp, ArrowDown } from '@element-plus/icons-vue'
 import { uploadImageApi, uploadVoiceApi } from '@/api/message'
 import { getSystemEmojisApi, getUserEmojisApi, uploadEmojiApi, deleteEmojiApi, type EmojiVO } from '@/api/emoji'
 import Toolbar from '../communication/Toolbar.vue'
@@ -227,6 +220,9 @@ const deleteEmoji = async (emojiId: number) => {
   }
 }
 
+/** 暴露方法供父组件调用 */
+defineExpose({ toggleExpand, openEmojiPicker })
+
 /** 组件卸载时清理录音资源 */
 onUnmounted(() => {
   if (mediaRecorder && isRecording.value) mediaRecorder.stop()
@@ -236,20 +232,6 @@ onUnmounted(() => {
 
 <style scoped>
 .communication-bar {
-  border-top: 1px solid var(--border-color-lighter);
   background: var(--bg-color-white);
-}
-
-.toggle-btn {
-  display: flex;
-  justify-content: center;
-  padding: 6px 0;
-  cursor: pointer;
-  color: var(--text-secondary);
-  transition: color 0.2s;
-}
-
-.toggle-btn:hover {
-  color: var(--color-primary);
 }
 </style>

@@ -124,22 +124,23 @@ defineExpose({ scrollToBottom })
 }
 
 .message-bubble {
-  background: var(--bg-color-white);
-  padding: 12px 20px;
-  border-radius: 22px;
+  background: #ffffff;
+  color: #1f2937;
+  padding: 10px 16px;
+  border-radius: 6px;
   word-wrap: break-word;
-  line-height: 1.6;
-  font-size: 15px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border-bottom-left-radius: 6px;
+  line-height: 1.55;
+  font-size: 14px;
+  border: 1px solid #ececec;
+  border-top-left-radius: 2px;
 }
 
 .message-item.own .message-bubble {
-  background: linear-gradient(135deg, #7c6df0, #a08aff);
-  color: white;
-  border-bottom-right-radius: 6px;
-  border-bottom-left-radius: 22px;
-  border-top-right-radius: 6px;
+  background: #95ec69;
+  color: #1f2937;
+  border: none;
+  border-top-right-radius: 2px;
+  border-top-left-radius: 6px;
 }
 
 .loading {

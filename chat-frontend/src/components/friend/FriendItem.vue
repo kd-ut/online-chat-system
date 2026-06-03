@@ -59,32 +59,30 @@ const handleCommand = (command: string) => {
 .friend-item {
   display: flex;
   align-items: center;
-  padding: 12px 16px;
+  padding: 10px 16px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.15s;
   position: relative;
-  margin: 2px 8px;
-  border-radius: 14px;
+  margin: 0 4px;
+  border-radius: var(--border-radius-small);
 }
 
 .friend-item:hover {
-  background: #f3f0ff;
-  transform: translateX(2px);
+  background: var(--bg-color);
 }
 
 .friend-item.active {
-  background: linear-gradient(135deg, #f3f0ff, #e8e3ff);
-  box-shadow: 0 2px 8px rgba(108, 92, 231, 0.08);
+  background: #eef0ff;
 }
 
 .avatar {
   position: relative;
-  margin-right: 14px;
+  margin-right: 12px;
+  flex-shrink: 0;
 }
 
 .avatar :deep(.el-avatar) {
   border: 2px solid transparent;
-  transition: border-color 0.2s;
 }
 
 .friend-item.active .avatar :deep(.el-avatar) {
@@ -93,19 +91,16 @@ const handleCommand = (command: string) => {
 
 .online-dot {
   position: absolute;
-  bottom: 3px;
-  right: 3px;
-  width: 10px;
-  height: 10px;
+  bottom: 2px;
+  right: 2px;
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  background: var(--text-secondary);
+  background: var(--text-placeholder);
   border: 2px solid var(--bg-color-white);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
 }
-
 .online-dot.online {
   background: var(--color-success);
-  box-shadow: 0 0 6px rgba(0, 184, 148, 0.4);
 }
 
 .friend-info {
@@ -114,14 +109,14 @@ const handleCommand = (command: string) => {
 }
 
 .name {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 3px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
   color: var(--text-primary);
 }
 
 .friend-item.active .name {
-  color: var(--color-primary);
+  font-weight: 600;
 }
 
 .message {
@@ -147,6 +142,5 @@ const handleCommand = (command: string) => {
   margin-left: 8px;
   flex-shrink: 0;
   line-height: 1;
-  box-shadow: 0 2px 6px rgba(255, 118, 117, 0.35);
 }
 </style>

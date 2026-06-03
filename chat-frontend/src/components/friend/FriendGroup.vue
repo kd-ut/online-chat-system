@@ -37,22 +37,22 @@ defineEmits<{
 }
 
 .group-header {
-  padding: 10px 20px;
-  font-size: 13px;
+  padding: 12px 20px 6px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   letter-spacing: 0.5px;
 }
 
 .count {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--text-secondary);
   background: var(--border-color-lighter);
-  padding: 1px 8px;
-  border-radius: 10px;
+  padding: 1px 7px;
+  border-radius: 6px;
   font-weight: 500;
 }
 </style>

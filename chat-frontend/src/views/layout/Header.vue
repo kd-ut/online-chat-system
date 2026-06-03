@@ -96,9 +96,7 @@ onMounted(() => {
 <style scoped>
 .header {
   height: var(--header-height);
-  padding: 0 32px;
-  border: 3px solid #b3d9ff;
-  border-radius: 24px;
+  padding: 0 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -106,49 +104,47 @@ onMounted(() => {
   flex-shrink: 0;
   position: relative;
   z-index: 10;
-  box-shadow: var(--box-shadow-light);
+  border-bottom: 1px solid var(--border-color);
 }
 .logo {
-  font-size: 22px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-success));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
-.actions { display: flex; align-items: center; gap: 24px; }
+.logo span {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: 0.5px;
+}
+.actions { display: flex; align-items: center; gap: 16px; }
 .user-info {
-  display: flex; align-items: center; gap: 12px; cursor: pointer;
-  padding: 8px 18px; border-radius: 30px; transition: all 0.2s;
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  padding: 6px 14px; border-radius: 8px; transition: all 0.2s;
 }
 .user-info:hover {
-  background: #f3f0ff;
-  transform: translateY(-1px);
+  background: var(--bg-color);
 }
-.user-info span { font-size: 15px; font-weight: 600; color: var(--text-primary); }
+.user-info span { font-size: 14px; font-weight: 600; color: var(--text-primary); }
 
 .bell-badge :deep(.el-badge__content) {
   border: 2px solid var(--bg-color-white) !important;
 }
 
 .bell-btn {
-  width: 44px !important;
-  height: 44px !important;
-  border-radius: 14px !important;
+  width: 38px !important;
+  height: 38px !important;
+  border-radius: var(--border-radius-small) !important;
   background: var(--bg-color) !important;
   border: 1px solid transparent !important;
-  font-size: 20px;
-  transition: all 0.25s !important;
+  font-size: 18px;
+  transition: all 0.2s !important;
   color: var(--text-regular);
 }
 
 .bell-btn:hover {
-  transform: translateY(-2px) !important;
-  background: #f3f0ff !important;
+  background: #f0f1ff !important;
   color: var(--color-primary) !important;
-  border-color: var(--color-primary-light) !important;
-  box-shadow: 0 4px 16px rgba(108, 92, 231, 0.15) !important;
 }
 
 .bell-btn:active {
