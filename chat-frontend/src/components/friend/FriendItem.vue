@@ -14,7 +14,9 @@
       <div class="message">{{ friend.signature || '这个人很懒，什么都没写' }}</div>
     </div>
 
-    <span v-if="friend.unreadCount > 0" class="unread-dot"></span>
+    <span v-if="friend.unreadCount > 0" class="unread-badge">
+      {{ friend.unreadCount > 99 ? '99+' : friend.unreadCount }}
+    </span>
 
     <el-dropdown trigger="click" @command="handleCommand">
       <el-button :icon="MoreFilled" size="small" text @click.stop />
@@ -130,13 +132,21 @@ const handleCommand = (command: string) => {
   white-space: nowrap;
 }
 
-.unread-dot {
-  width: 9px;
-  height: 9px;
+.unread-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   background: var(--color-danger);
-  border-radius: 50%;
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   margin-left: 8px;
   flex-shrink: 0;
-  box-shadow: 0 0 6px rgba(255, 118, 117, 0.5);
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(255, 118, 117, 0.35);
 }
 </style>

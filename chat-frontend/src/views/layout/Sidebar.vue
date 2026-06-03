@@ -65,15 +65,15 @@ const showCreateGroupDialog = ref(false)
 const friendListForGroup = ref<FriendVO[]>([])
 const impressionTargetUserId = ref<number | null>(null)
 
-/** 好友未读消息总数（用于好友 Tab 红点提示） */
+/** 好友未读消息总数（用于好友 Tab 角标） */
 const friendUnreadCount = computed(() => {
-  let count = 0
+  let total = 0
   for (const group of friendStore.friendList) {
     for (const friend of group.friends) {
-      if (friend.unreadCount > 0) count++
+      total += friend.unreadCount || 0
     }
   }
-  return count
+  return total
 })
 
 /** 跳转到管理后台 @returns void */

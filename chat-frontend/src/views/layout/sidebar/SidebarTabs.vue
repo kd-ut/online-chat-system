@@ -9,7 +9,9 @@
       <span v-if="tab.badge && badgeCount > 0" class="badge">
         {{ badgeCount }}
       </span>
-      <span v-if="tab.key === 'friends' && friendUnreadCount > 0" class="friend-dot"></span>
+      <span v-if="tab.key === 'friends' && friendUnreadCount > 0" class="friend-badge">
+        {{ friendUnreadCount > 99 ? '99+' : friendUnreadCount }}
+      </span>
     </div>
   </div>
 </template>
@@ -137,14 +139,22 @@ const handleTabClick = (tab: any) => {
   box-shadow: 0 2px 6px rgba(255, 118, 117, 0.3);
 }
 
-.friend-dot {
+.friend-badge {
   position: absolute;
-  top: 3px;
-  right: 14px;
-  width: 8px;
-  height: 8px;
+  top: -4px;
+  right: 6px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   background: var(--color-danger);
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(255, 118, 117, 0.5);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(255, 118, 117, 0.35);
 }
 </style>

@@ -15,7 +15,9 @@
         <el-avatar :size="40" :src="group.avatar || ''">
           {{ group.name?.charAt(0) || '群' }}
         </el-avatar>
-        <span v-if="group.unreadCount > 0" class="unread-dot"></span>
+        <span v-if="group.unreadCount > 0" class="unread-badge">
+          {{ group.unreadCount > 99 ? '99+' : group.unreadCount }}
+        </span>
       </div>
       <div class="group-info">
         <div class="group-name">{{ group.name }}</div>
@@ -109,15 +111,23 @@ const formatTime = (time: string) => {
   border-color: var(--color-primary-light);
 }
 
-.unread-dot {
+.unread-badge {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 10px;
-  height: 10px;
+  top: -6px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
   background: var(--color-danger);
-  border-radius: 50%;
-  box-shadow: 0 0 6px rgba(255, 118, 117, 0.5);
+  color: white;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  box-shadow: 0 2px 6px rgba(255, 118, 117, 0.35);
   border: 2px solid var(--bg-color-white);
 }
 
