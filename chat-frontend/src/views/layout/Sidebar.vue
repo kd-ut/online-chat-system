@@ -3,7 +3,8 @@
     <SidebarHeader />
 
     <SidebarTabs :active-tab="activeTab" :badge-count="friendStore.friendRequests.length"
-      :is-admin="userStore.isAdmin()" @update:active-tab="activeTab = $event" @go-to-admin="goToAdmin" />
+      :friend-unread-count="friendUnreadCount" :is-admin="userStore.isAdmin()"
+      @update:active-tab="activeTab = $event" @go-to-admin="goToAdmin" />
 
     <div class="sidebar-content">
       <FriendList v-show="activeTab === 'friends'" :current-chat-user-id="currentChatUserId"
@@ -25,7 +26,7 @@
 
 <script setup lang="ts">
 /** 侧边栏组件，整合好友/群聊/申请/印象选项卡 @component */
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/userStore'
@@ -63,6 +64,17 @@ const showCreateGroupDialog = ref(false)
 /** 用于创建群聊的好友列表 */
 const friendListForGroup = ref<FriendVO[]>([])
 const impressionTargetUserId = ref<number | null>(null)
+
+/** 好友未读消息总数（用于好友 Tab 红点提示） */
+const friendUnreadCount = computed(() => {
+  let count = 0
+  for (const group of friendStore.friendList) {
+    for (const friend of group.friends) {
+      if (friend.unreadCount > 0) count++
+    }
+  }
+  return count
+})
 
 /** 跳转到管理后台 @returns void */
 const goToAdmin = () => {
@@ -152,11 +164,33 @@ const onGroupMessage = (data: any) => {
   }
 }
 
+/** 收到私聊消息时更新好友未读计数（红点），当前聊天窗口内不增加 @param data 消息数据 */
+const onPrivateMessage = (data: any) => {
+  if (currentChatUserId.value !== data.fromUserId) {
+    friendStore.incrementUnreadForFriend(data.fromUserId)
+  }
+}
+
 watch(() => route.query, () => {
   loadGroupList()
-  friendStore.loadFriendList()
   friendStore.loadFriendRequests()
 }, { deep: true })
+
+/** 同步路由参数到当前聊天状态，并清除对应未读红点 */
+watch(() => route.query.friendId, (friendId) => {
+  const id = friendId ? Number(friendId) : null
+  currentChatUserId.value = id
+  if (id) friendStore.clearUnreadForFriend(id)
+}, { immediate: true })
+
+watch(() => route.query.groupId, (groupId) => {
+  const id = groupId ? Number(groupId) : null
+  currentGroupId.value = id
+  if (id) {
+    const group = groupList.value.find(g => g.id === id)
+    if (group) group.unreadCount = 0
+  }
+}, { immediate: true })
 
 onMounted(() => {
   friendStore.loadFriendList()
@@ -169,6 +203,14 @@ onMounted(() => {
     }
   })
   websocketService.onGroupMessage(onGroupMessage)
+  websocketService.onMessage(onPrivateMessage)
+  websocketService.onFriendRequest(() => {
+    friendStore.loadFriendRequests()
+  })
+  websocketService.onFriendRequestHandled(() => {
+    friendStore.loadFriendList()
+    friendStore.loadFriendRequests()
+  })
 })
 </script>
 

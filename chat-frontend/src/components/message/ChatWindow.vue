@@ -11,8 +11,6 @@
 
     <CallDialog v-model="voiceCallVisible" :target-user="friend" call-type="voice" :is-caller="true"
       @end-call="endVoiceCall" />
-    <CallDialog v-model="videoCallVisible" :target-user="friend" call-type="video" :is-caller="true"
-      @end-call="endVideoCall" />
     <CallDialog v-model="incomingCallVisible" :target-user="incomingCaller" :call-type="incomingCallType"
       :is-caller="false" :initial-offer="pendingOffer" @end-call="endIncomingCall"
       @call-accepted="stopRingtone" />
@@ -31,6 +29,7 @@ import { websocketService } from '@/utils/websocket'
 import { useUserStore } from '@/stores/userStore'
 import { useMessageStore } from '@/stores/messageStore'
 import { useFriendStore } from '@/stores/friendStore'
+import { useRtcStore } from '@/stores/rtcStore'
 import ChatHeader from '../chat/ChatHeader.vue'
 import MessageList from '../chat/MessageList.vue'
 import MessageInput from '../chat/MessageInput.vue'
@@ -42,6 +41,7 @@ const props = defineProps<{ friend: any }>()
 const userStore = useUserStore()
 const messageStore = useMessageStore()
 const friendStore = useFriendStore()
+const rtcStore = useRtcStore()
 /** 当前登录用户 ID */
 const currentUserId = userStore.userInfo?.id
 
@@ -60,8 +60,6 @@ const showDownloadDialog = ref(false)
 
 /** 语音通话对话框可见 */
 const voiceCallVisible = ref(false)
-/** 视频通话对话框可见 */
-const videoCallVisible = ref(false)
 /** 来电对话框可见 */
 const incomingCallVisible = ref(false)
 /** 来电者信息 */
@@ -207,11 +205,10 @@ const startVoiceCall = (toUserId: number) => {
 const startVideoCall = (toUserId: number) => {
   if (!toUserId) return ElMessage.warning('请先选择聊天对象')
   if (toUserId === currentUserId) return ElMessage.error('不能给自己打电话')
-  videoCallVisible.value = true
+  void rtcStore.startDirectVideoCall(props.friend)
 }
 
 const endVoiceCall = () => { voiceCallVisible.value = false }
-const endVideoCall = () => { videoCallVisible.value = false }
 const endIncomingCall = () => {
   incomingCallVisible.value = false; incomingCaller.value = null; pendingOffer.value = null
   stopRingtone()
@@ -250,10 +247,11 @@ const onNewMessage = (data: any) => {
       isRecalled: false
     })
     messageListRef.value?.scrollToBottom()
+    friendStore.clearUnreadForFriend(data.fromUserId)
   }
 }
 
-/** 通话信令回调 @param data 信令数据 @returns void */
+/** 通话信令回调（仅处理语音通话信令，视频走 SFU） @param data 信令数据 @returns void */
 const onCallSignal = (data: any) => {
   if (data.action === 'offer' && data.fromUserId !== currentUserId) {
     pendingOffer.value = data
@@ -276,12 +274,18 @@ watch(() => props.friend, (newFriend) => {
   }
 }, { immediate: true, deep: true })
 
+/** WebSocket 回调清理函数 */
+let unsubMessage: (() => void) | null = null
+let unsubCallSignal: (() => void) | null = null
+
 onMounted(() => {
-  websocketService.onMessage(onNewMessage)
-  websocketService.onCallSignal(onCallSignal)
+  unsubMessage = websocketService.onMessage(onNewMessage)
+  unsubCallSignal = websocketService.onCallSignal(onCallSignal)
 })
 
 onUnmounted(() => {
+  if (unsubMessage) { unsubMessage(); unsubMessage = null }
+  if (unsubCallSignal) { unsubCallSignal(); unsubCallSignal = null }
   if (props.friend) markAsRead()
 })
 </script>

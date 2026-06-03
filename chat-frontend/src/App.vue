@@ -1,21 +1,30 @@
 <template>
   <router-view />
+  <RtcCallDialog />
 </template>
 
 <script setup lang="ts">
-/** 根组件 @module App */
-import { onMounted } from 'vue'
+import { watch } from 'vue'
 import { useUserStore } from '@/stores/userStore'
+import { useRtcStore } from '@/stores/rtcStore'
 import { websocketService } from '@/utils/websocket'
+import RtcCallDialog from '@/components/rtc/RtcCallDialog.vue'
 
 const userStore = useUserStore()
+const rtcStore = useRtcStore()
 
-onMounted(() => {
-  /** 如果已登录，建立WebSocket连接 */
-  if (userStore.isLoggedIn()) {
+watch(
+  () => userStore.token,
+  (token) => {
+    if (!token) {
+      rtcStore.disconnect()
+      return
+    }
     websocketService.connect()
-  }
-})
+    rtcStore.ensureSocket()
+  },
+  { immediate: true }
+)
 </script>
 
 <style>

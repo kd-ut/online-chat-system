@@ -1,7 +1,7 @@
 <template>
   <div class="message-area">
     <div class="message-input">
-      <el-input v-model="content" type="textarea" :rows="2" placeholder="请输入消息..." @keyup.ctrl.enter="handleSend" />
+      <el-input v-model="content" type="textarea" :rows="2" placeholder="请输入消息..." @keydown="handleKeydown" />
       <div class="input-actions">
         <el-button type="primary" @click="handleSend">发送</el-button>
       </div>
@@ -34,6 +34,14 @@ const emit = defineEmits<{
 
 /** 输入框内容 */
 const content = ref('')
+
+/** 键盘事件处理：Enter 发送，Shift+Enter 换行 @param e 键盘事件 */
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    handleSend()
+  }
+}
 
 /** 发送文本消息 @returns void */
 const handleSend = () => {

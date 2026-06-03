@@ -4,6 +4,7 @@ services:
     container_name: chat-mysql
     restart: always
     environment:
+      MYSQL_ROOT_HOST: '%'
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-123456}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-chat_db}
     ports:
@@ -48,6 +49,8 @@ services:
       DB_PORT: 3306
       REDIS_HOST: redis
       REDIS_PORT: 6379
+    volumes:
+      - uploads_data:/app/uploads
     depends_on:
       mysql:
         condition: service_healthy
@@ -61,10 +64,17 @@ services:
     container_name: chat-frontend
     restart: always
     ports:
-      - "80:80"
+      - "8081:80"
+    extra_hosts:
+      - "webrtc-sfu:host-gateway"
     depends_on:
       backend:
         condition: service_healthy
 
+  # webrtc-sfu is managed via PM2 directly (not in Docker)
+  # mediasoup requires native host networking for RTC ports
+  # See /opt/webchat/ecosystem.config.js
+
 volumes:
   mysql_data:
+  uploads_data:

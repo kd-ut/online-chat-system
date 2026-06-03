@@ -23,6 +23,10 @@ spring:
           max-idle: ${REDIS_POOL_MAX_IDLE:16}
           min-idle: ${REDIS_POOL_MIN_IDLE:2}
           max-wait: 5000ms
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 25MB
 
 server:
   port: ${SERVER_PORT:8080}
@@ -47,7 +51,3 @@ aliyun:
     region: ${ALIYUN_OSS_REGION:}
     access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID:}
     access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:}
-
-rtc:
-  app-id: ${RTC_APP_ID:}
-  app-key: ${RTC_APP_KEY:}

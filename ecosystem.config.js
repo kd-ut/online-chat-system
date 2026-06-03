@@ -1,0 +1,43 @@
+module.exports = {
+  apps: [
+    {
+      name: 'webchat-stack',
+      cwd: '/opt/webchat',
+      script: '/bin/bash',
+      args: '-c "docker compose up --abort-on-container-exit --remove-orphans"',
+      autorestart: true,
+      restart_delay: 10000,
+      max_restarts: 5,
+      watch: false,
+      kill_timeout: 30000,
+      shutdown_with_message: true,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      error_file: '/root/.pm2/logs/webchat-stack-error.log',
+      out_file: '/root/.pm2/logs/webchat-stack-out.log',
+      merge_logs: true,
+    },
+    {
+      name: 'webrtc-sfu',
+      cwd: '/opt/webchat/webrtc-sfu',
+      script: 'server.js',
+      interpreter: 'node',
+      env: {
+        PORT: 3000,
+        JWT_SECRET: 'aB3dE5fG7hI9jK1lM2nO4pQ6rS8tU0vWadsfasWA6cC8eE0gG2iI4kK6mM8oO0qQ',
+        ANNOUNCED_IP: '47.100.227.26',
+        RTC_MIN_PORT: 2000,
+        RTC_MAX_PORT: 2100,
+        REJOIN_GRACE_MS: 30000,
+      },
+      autorestart: true,
+      restart_delay: 5000,
+      max_restarts: 10,
+      watch: false,
+      kill_timeout: 10000,
+      log_date_format: 'YYYY-MM-DD HH:mm:ss',
+      error_file: '/root/.pm2/logs/webrtc-sfu-error.log',
+      out_file: '/root/.pm2/logs/webrtc-sfu-out.log',
+      merge_logs: true,
+    },
+  ]
+};

@@ -14,6 +14,8 @@ public class MessageConstants {
     public static final int MSG_TYPE_IMAGE = 2;
     /** 文件消息 */
     public static final int MSG_TYPE_FILE = 3;
+    /** 语音消息 */
+    public static final int MSG_TYPE_VOICE = 4;
 
     // ========== 消息状态 ==========
     /** 消息未读 */
@@ -39,12 +41,4 @@ public class MessageConstants {
     public static final String DOWNLOAD_FILE_PREFIX = "chat_";
     /** 下载文件扩展名 */
     public static final String DOWNLOAD_FILE_EXTENSION = ".txt";
-
-    // ========== 消息类型 ==========
-    /** 语音消息 */
-    public static final int MSG_TYPE_VOICE = 4;
-    /** 视频通话 */
-    public static final int MSG_TYPE_VIDEO_CALL = 5;
-    /** 语音通话 */
-    public static final int MSG_TYPE_VOICE_CALL = 6;
 }

@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 /** 群聊聊天窗口组件，管理群聊消息/成员/公告/管理等完整功能 @component */
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import {
   getGroupHistoryApi,
@@ -185,6 +185,7 @@ const onGroupMessage = (data: any) => {
     }
     messages.value.push(newMsg)
     messageListRef.value?.scrollToBottom()
+    clearUnreadCount()
   }
 }
 
@@ -288,9 +289,16 @@ watch(() => props.group, (newGroup) => {
   }
 }, { immediate: true })
 
+/** WebSocket 群消息回调清理函数 */
+let unsubGroupMessage: (() => void) | null = null
+
 /** 注册 WebSocket 群消息回调 */
 onMounted(() => {
-  websocketService.onGroupMessage(onGroupMessage)
+  unsubGroupMessage = websocketService.onGroupMessage(onGroupMessage)
+})
+
+onUnmounted(() => {
+  if (unsubGroupMessage) { unsubGroupMessage(); unsubGroupMessage = null }
 })
 </script>
 

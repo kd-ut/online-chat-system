@@ -1,5 +1,6 @@
 package com.chat.chat_backend.modules.friend.service.impl;
 
+import cn.hutool.json.JSONUtil;
 import com.chat.chat_backend.common.exception.BusinessException;
 import com.chat.chat_backend.common.result.ResultCode;
 import com.chat.chat_backend.modules.friend.mapper.FriendMapper;
@@ -12,6 +13,7 @@ import com.chat.chat_backend.modules.friend.entity.Friend;
 import com.chat.chat_backend.modules.friend.entity.FriendRequest;
 import com.chat.chat_backend.modules.user.entity.User;
 import com.chat.chat_backend.modules.friend.service.FriendRequestService;
+import com.chat.chat_backend.websocket.WebSocketSessionManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,8 @@ public class FriendRequestServiceImpl implements FriendRequestService {
     private final FriendRequestMapper friendRequestMapper;
     /** 用户数据访问层 */
     private final UserMapper userMapper;
+    /** WebSocket会话管理器（用于实时推送好友请求通知） */
+    private final WebSocketSessionManager sessionManager;
 
     /** 发送好友请求（校验目标用户存在性、是否已是好友、是否有待处理的请求） @param currentUserId 当前用户ID @param request 好友请求 */
     @Override
@@ -61,6 +65,21 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         friendRequest.setExpireTime(LocalDateTime.now().plusDays(7));
         friendRequest.setCreatedAt(LocalDateTime.now());
         friendRequestMapper.insert(friendRequest);
+
+        // 通过WebSocket实时推送好友请求通知给目标用户
+        User fromUser = userMapper.selectById(currentUserId);
+        String fromUserNickname = fromUser != null ? fromUser.getNickname() : "未知用户";
+        String fromUserAvatar = fromUser != null ? fromUser.getAvatar() : null;
+        String pushMsg = JSONUtil.createObj()
+                .set("type", "friend_request")
+                .set("requestId", friendRequest.getId())
+                .set("fromUserId", currentUserId)
+                .set("fromUserNickname", fromUserNickname)
+                .set("fromUserAvatar", fromUserAvatar)
+                .set("message", request.getMessage())
+                .set("createdAt", friendRequest.getCreatedAt().toString())
+                .toString();
+        sessionManager.sendMessage(request.getToUserId(), pushMsg);
     }
 
     /** 获取待处理的好友请求列表 @param currentUserId 当前用户ID @return 待处理的好友请求列表 */
@@ -118,5 +137,17 @@ public class FriendRequestServiceImpl implements FriendRequestService {
             friend2.setCreatedAt(LocalDateTime.now());
             friendMapper.insert(friend2);
         }
+
+        // 通过WebSocket实时推送处理结果给请求发起方
+        User handler = userMapper.selectById(currentUserId);
+        String handlerNickname = handler != null ? handler.getNickname() : "未知用户";
+        String resultJson = JSONUtil.createObj()
+                .set("type", "friend_request_handled")
+                .set("requestId", requestId)
+                .set("status", request.getStatus())
+                .set("handledByUserId", currentUserId)
+                .set("handledByNickname", handlerNickname)
+                .toString();
+        sessionManager.sendMessage(friendRequest.getFromUserId(), resultJson);
     }
 }

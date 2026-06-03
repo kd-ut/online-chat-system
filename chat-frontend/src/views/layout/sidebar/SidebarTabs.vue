@@ -9,6 +9,7 @@
       <span v-if="tab.badge && badgeCount > 0" class="badge">
         {{ badgeCount }}
       </span>
+      <span v-if="tab.key === 'friends' && friendUnreadCount > 0" class="friend-dot"></span>
     </div>
   </div>
 </template>
@@ -18,10 +19,11 @@
 import { computed } from 'vue'
 import { User, ChatDotRound, Message, Star, Setting } from '@element-plus/icons-vue'
 
-/** 组件属性：当前激活 Tab、角标数量、是否为管理员 */
+/** 组件属性：当前激活 Tab、角标数量、好友未读计数、是否为管理员 */
 const props = defineProps<{
   activeTab: string
   badgeCount: number
+  friendUnreadCount: number
   isAdmin: boolean
 }>()
 
@@ -133,5 +135,16 @@ const handleTabClick = (tab: any) => {
   text-align: center;
   font-weight: 600;
   box-shadow: 0 2px 6px rgba(255, 118, 117, 0.3);
+}
+
+.friend-dot {
+  position: absolute;
+  top: 3px;
+  right: 14px;
+  width: 8px;
+  height: 8px;
+  background: var(--color-danger);
+  border-radius: 50%;
+  box-shadow: 0 0 6px rgba(255, 118, 117, 0.5);
 }
 </style>

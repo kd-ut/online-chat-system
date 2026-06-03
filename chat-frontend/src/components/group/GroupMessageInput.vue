@@ -3,10 +3,10 @@
     <el-input v-model="content" type="textarea" :rows="3"
       :disabled="muted"
       :placeholder="muted ? '你已被禁言' : '请输入群消息...'"
-      @keyup.ctrl.enter="handleSend" />
+      @keydown="handleKeydown" />
     <div class="input-actions">
       <el-tag v-if="muted" type="danger" effect="dark" size="small">你已被禁言</el-tag>
-      <el-button v-else type="primary" @click="handleSend">发送 (Ctrl+Enter)</el-button>
+      <el-button v-else type="primary" @click="handleSend">发送 (Enter)</el-button>
     </div>
   </div>
 </template>
@@ -27,6 +27,14 @@ const emit = defineEmits<{
 
 /** 输入框内容 */
 const content = ref('')
+
+/** 键盘事件处理：Enter 发送，Shift+Enter 换行 @param e 键盘事件 */
+const handleKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault()
+    handleSend()
+  }
+}
 
 /** 发送消息 @returns void */
 const handleSend = () => {

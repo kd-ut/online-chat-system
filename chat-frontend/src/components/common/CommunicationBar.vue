@@ -85,8 +85,7 @@ const handleImageUpload = async (event: Event) => {
   try {
     const url = await uploadImageApi(file)
     emit('sendImage', url)
-    ElMessage.success('图片已发送')
-  } catch { ElMessage.error('发送失败') }
+  } catch { /* error already shown by response interceptor */ }
   input.value = ''
 }
 
@@ -128,8 +127,7 @@ const startRecord = async () => {
       try {
         const url = await uploadVoiceApi(file)
         emit('sendVoice', url, duration)
-        ElMessage.success('语音已发送')
-      } catch { ElMessage.error('发送失败') }
+      } catch { /* error already shown by response interceptor */ }
       mediaStream?.getTracks().forEach(t => t.stop())
       mediaStream = null
     }

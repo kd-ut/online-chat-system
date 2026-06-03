@@ -72,8 +72,8 @@ const confirmLogout = () => {
 
 /** 通知提示音 URL（缓存） */
 let _notifSoundUrl: string | null = null
-/** 有新消息或通知时触发 @returns void */
-const onNewMessageOrNotification = () => {
+/** 有系统通知时触发（仅系统通知使用统一铃铛提醒，好友消息通过侧边栏红点提示） */
+const onSystemNotification = () => {
   messageStore.loadUnreadCount()
   if (_notifSoundUrl === null) {
     try { _notifSoundUrl = new URL('../../assets/audio/notice.MP3', import.meta.url).href }
@@ -89,9 +89,7 @@ const onNewMessageOrNotification = () => {
 
 onMounted(() => {
   messageStore.loadUnreadCount()
-  websocketService.onMessage(onNewMessageOrNotification)
-  websocketService.onGroupMessage(onNewMessageOrNotification)
-  websocketService.onNotification(onNewMessageOrNotification)
+  websocketService.onNotification(onSystemNotification)
 })
 </script>
 
