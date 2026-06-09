@@ -1,5 +1,5 @@
-
-
+/**表情模块api @module emoji */
+import request from '../request'
 /** 表情视图对象 */
 export interface EmojiVO {
   /** 表情ID */
