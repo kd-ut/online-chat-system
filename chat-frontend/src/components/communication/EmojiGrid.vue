@@ -1,70 +1,114 @@
 <template>
   <div class="emoji-grid">
-    <div v-for="emoji in emojis" :key="emoji.id" class="emoji-item" @click="$emit('select', emoji)">
-      <img :src="emoji.url" />
-      <span>{{ emoji.name }}</span>
-      <el-button v-if="showDelete" class="delete-btn" size="small" text @click.stop="$emit('delete', emoji.id)">
+    <button
+      v-for="emoji in emojis"
+      :key="emoji.id"
+      class="emoji-card"
+      type="button"
+      @click="selectEmoji(emoji)"
+    >
+      <img class="emoji-card__image" :src="emoji.url" :alt="emoji.name" />
+      <span class="emoji-card__name">{{ emoji.name }}</span>
+
+      <el-button
+        v-if="showDelete"
+        class="emoji-card__delete"
+        size="small"
+        text
+        @click.stop="deleteEmoji(emoji.id)"
+      >
         删除
       </el-button>
-    </div>
-    <Empty v-if="emojis.length === 0" :description="emptyText" />
+    </button>
+
+    <Empty v-if="!hasEmoji" :description="emptyText" />
   </div>
 </template>
 
 <script setup lang="ts">
-/** 表情网格展示组件 @component */
+import { computed } from 'vue'
 import Empty from '@/components/common/Empty.vue'
 
-/** 组件属性：表情列表、是否显示删除按钮、空状态文本 */
-defineProps<{
-  emojis: any[]
+type EmojiItem = {
+  id: number
+  name: string
+  url: string
+}
+
+const props = withDefaults(defineProps<{
+  emojis: EmojiItem[]
   showDelete?: boolean
   emptyText?: string
-}>()
+}>(), {
+  showDelete: false,
+  emptyText: '暂无表情'
+})
 
-/** 组件事件：选择表情、删除表情 */
-defineEmits<{
-  (e: 'select', emoji: any): void
+const emit = defineEmits<{
+  (e: 'select', emoji: EmojiItem): void
   (e: 'delete', id: number): void
 }>()
+
+const hasEmoji = computed(() => props.emojis.length > 0)
+
+const selectEmoji = (emoji: EmojiItem) => {
+  emit('select', emoji)
+}
+
+const deleteEmoji = (id: number) => {
+  emit('delete', id)
+}
 </script>
 
 <style scoped>
 .emoji-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
 }
 
-.emoji-item {
+.emoji-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
-  cursor: pointer;
+  min-width: 0;
   padding: 10px;
+  border: 0;
   border-radius: 14px;
-  position: relative;
-  transition: all 0.2s;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.2s;
 }
 
-.emoji-item:hover {
+.emoji-card:hover {
   background: #f3f0ff;
   transform: translateY(-2px);
 }
 
-.emoji-item:active {
+.emoji-card:active {
   transform: scale(0.95);
 }
 
-.emoji-item img {
+.emoji-card__image {
   width: 48px;
   height: 48px;
   object-fit: contain;
   border-radius: 8px;
 }
 
-.delete-btn {
+.emoji-card__name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.emoji-card__delete {
   position: absolute;
   top: 0;
   right: 0;
@@ -72,7 +116,7 @@ defineEmits<{
   transition: opacity 0.2s;
 }
 
-.emoji-item:hover .delete-btn {
+.emoji-card:hover .emoji-card__delete {
   opacity: 1;
 }
 </style>
