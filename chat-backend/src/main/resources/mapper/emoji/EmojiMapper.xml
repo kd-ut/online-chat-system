@@ -4,14 +4,31 @@
 <mapper namespace="com.chat.chat_backend.modules.emoji.mapper.EmojiMapper">
 
     <select id="findSystemEmojis" resultType="com.chat.chat_backend.modules.emoji.entity.Emoji">
-        SELECT * FROM emoji
+        SELECT
+            id,
+            name,
+            url,
+            category,
+            user_id,
+            is_system,
+            created_at
+        FROM emoji
         WHERE is_system = 1
-        ORDER BY category, id
+        ORDER BY category ASC, id ASC
     </select>
 
     <select id="findUserEmojis" resultType="com.chat.chat_backend.modules.emoji.entity.Emoji">
-        SELECT * FROM emoji
-        WHERE user_id = #{userId} AND is_system = 0
+        SELECT
+            id,
+            name,
+            url,
+            category,
+            user_id,
+            is_system,
+            created_at
+        FROM emoji
+        WHERE user_id = #{userId}
+          AND is_system = 0
         ORDER BY created_at DESC
     </select>
 
