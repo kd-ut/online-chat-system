@@ -1,31 +1,38 @@
 package com.chat.chat_backend.modules.emoji.entity;
 
-import com.baomidou.mybatisplus.annotation.*;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
+/**
+ * 表情实体，对应 emoji 数据表。
+ */
 @Data
 @TableName("emoji")
-/**
- * 表情实体
- *
- * @author chat-backend
- * @since 2026-05-12
- */
 public class Emoji {
+
+    /** 表情 ID，自增主键 */
     @TableId(type = IdType.AUTO)
-    /** 表情ID，自增主键 */
     private Long id;
+
     /** 表情名称 */
     private String name;
-    /** 表情图片URL */
+
+    /** 表情图片 URL */
     private String url;
+
     /** 表情分类 */
     private String category;
-    /** 上传用户ID */
+
+    /** 上传用户 ID，系统表情为空 */
     private Long userId;
-    /** 是否系统表情：0-否，1-是 */
+
+    /** 是否系统表情：0=用户自定义，1=系统内置 */
     private Integer isSystem;
+
     /** 创建时间 */
     private LocalDateTime createdAt;
 }
