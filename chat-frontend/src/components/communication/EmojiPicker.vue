@@ -1,76 +1,110 @@
 <template>
-  <el-drawer v-model="visible" title="表情包" direction="btt" size="420px" @close="handleClose" class="beautiful-drawer">
-    <div class="emoji-container">
-      <div class="emoji-tabs">
-        <el-button size="small" :type="activeTab === 'system' ? 'primary' : 'default'" @click="activeTab = 'system'">
-          系统表情
-        </el-button>
-        <el-button size="small" :type="activeTab === 'user' ? 'primary' : 'default'" @click="activeTab = 'user'">
-          我的表情
-        </el-button>
-        <el-button size="small" @click="$emit('upload')">上传表情</el-button>
-      </div>
+  <el-drawer
+    v-model="drawerVisible"
+    class="beautiful-drawer"
+    title="表情包"
+    direction="btt"
+    size="420px"
+    @close="closeDrawer"
+  >
+    <section class="emoji-panel">
+      <header class="emoji-panel__toolbar">
+        <div class="emoji-panel__tabs">
+          <el-button
+            v-for="tab in tabs"
+            :key="tab.value"
+            size="small"
+            :type="activeTab === tab.value ? 'primary' : 'default'"
+            @click="switchTab(tab.value)"
+          >
+            {{ tab.label }}
+          </el-button>
+        </div>
 
-      <EmojiGrid v-if="activeTab === 'system'" :emojis="systemEmojis" :show-delete="false" empty-text="暂无系统表情"
-        @select="$emit('select', $event)" />
+        <el-button size="small" @click="emit('upload')">上传表情</el-button>
+      </header>
 
-      <EmojiGrid v-if="activeTab === 'user'" :emojis="userEmojis" :show-delete="true" empty-text="暂无自定义表情"
-        @select="$emit('select', $event)" @delete="$emit('delete', $event)" />
-    </div>
+      <EmojiGrid
+        :emojis="currentEmojis"
+        :show-delete="activeTab === 'user'"
+        :empty-text="emptyText"
+        @select="emit('select', $event)"
+        @delete="emit('delete', $event)"
+      />
+    </section>
   </el-drawer>
 </template>
 
 <script setup lang="ts">
-/** 表情选择器抽屉组件 @component */
-import { ref, watch } from 'vue'
+import { computed, ref } from 'vue'
 import EmojiGrid from './EmojiGrid.vue'
 
-/** 组件属性：显示状态、系统/用户表情列表 */
+type EmojiTab = 'system' | 'user'
+
 const props = defineProps<{
   modelValue: boolean
   systemEmojis: any[]
   userEmojis: any[]
 }>()
 
-/** 组件事件：更新显示状态、选择/上传/删除表情 */
-const emit = defineEmits(['update:modelValue', 'select', 'upload', 'delete'])
+const emit = defineEmits<{
+  (event: 'update:modelValue', value: boolean): void
+  (event: 'select', emoji: any): void
+  (event: 'upload'): void
+  (event: 'delete', id: number): void
+}>()
 
-/** 抽屉可见性 */
-const visible = ref(false)
-/** 当前选中的表情 Tab */
-const activeTab = ref('system')
+const tabs: Array<{ label: string; value: EmojiTab }> = [
+  { label: '系统表情', value: 'system' },
+  { label: '我的表情', value: 'user' }
+]
 
-/** 同步外部 modelValue 到内部 visible */
-watch(() => props.modelValue, (val) => {
-  visible.value = val
+const activeTab = ref<EmojiTab>('system')
+
+const drawerVisible = computed({
+  get: () => props.modelValue,
+  set: (value: boolean) => emit('update:modelValue', value)
 })
 
-/** 内部 visible 变化同步到外部 */
-watch(visible, (val) => {
-  emit('update:modelValue', val)
-})
+const currentEmojis = computed(() => (
+  activeTab.value === 'system' ? props.systemEmojis : props.userEmojis
+))
 
-/** 关闭抽屉 @returns void */
-const handleClose = () => {
-  visible.value = false
+const emptyText = computed(() => (
+  activeTab.value === 'system' ? '暂无系统表情' : '暂无自定义表情'
+))
+
+const switchTab = (tab: EmojiTab) => {
+  activeTab.value = tab
+}
+
+const closeDrawer = () => {
+  drawerVisible.value = false
 }
 </script>
 
 <style scoped>
-.emoji-container {
-  padding: 16px;
+.emoji-panel {
   max-height: 400px;
+  padding: 16px;
   overflow-y: auto;
 }
 
-.emoji-tabs {
+.emoji-panel__toolbar {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
   margin-bottom: 20px;
 }
 
-.emoji-tabs .el-button {
-  border-radius: 12px !important;
-  font-weight: 600 !important;
+.emoji-panel__tabs {
+  display: flex;
+  gap: 10px;
+}
+
+.emoji-panel__toolbar :deep(.el-button) {
+  border-radius: 12px;
+  font-weight: 600;
 }
 </style>
