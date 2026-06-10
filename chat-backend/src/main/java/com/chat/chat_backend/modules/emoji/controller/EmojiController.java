@@ -3,80 +3,74 @@ package com.chat.chat_backend.modules.emoji.controller;
 import com.chat.chat_backend.common.result.Result;
 import com.chat.chat_backend.modules.emoji.dto.response.EmojiVO;
 import com.chat.chat_backend.modules.emoji.service.EmojiService;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.List;
 
 /**
- * 表情控制器
- *
- * @author chat-backend
- * @since 2026-05-12
+ * 表情接口控制器，负责系统表情、自定义表情的查询、上传和删除。
  */
-@Slf4j
 @RestController
 @RequestMapping("/emoji")
 @RequiredArgsConstructor
 public class EmojiController {
 
-    /** 表情服务 */
     private final EmojiService emojiService;
 
     /**
-     * 获取系统表情列表
-     *
-     * @return 系统表情列表
+     * 查询系统内置表情。
      */
     @GetMapping("/system")
-    public Result<List<EmojiVO>> getSystemEmojis() {
-        return Result.success(emojiService.getSystemEmojis());
+    public Result<List<EmojiVO>> listSystemEmojis() {
+        List<EmojiVO> emojis = emojiService.getSystemEmojis();
+        return Result.success(emojis);
     }
 
     /**
-     * 获取用户自定义表情列表
-     *
-     * @param request HTTP 请求对象（包含用户信息）
-     * @return 用户自定义表情列表
+     * 查询当前登录用户上传的自定义表情。
      */
     @GetMapping("/user")
-    public Result<List<EmojiVO>> getUserEmojis(HttpServletRequest request) {
-        Long userId = (Long) request.getAttribute("userId");
-        return Result.success(emojiService.getUserEmojis(userId));
+    public Result<List<EmojiVO>> listUserEmojis(HttpServletRequest request) {
+        Long userId = getCurrentUserId(request);
+        List<EmojiVO> emojis = emojiService.getUserEmojis(userId);
+        return Result.success(emojis);
     }
 
     /**
-     * 上传自定义表情
-     *
-     * @param request  HTTP 请求对象（包含用户信息）
-     * @param file     表情文件
-     * @param name     表情名称
-     * @param category 表情分类（可选）
-     * @return 上传后的表情信息
+     * 上传当前登录用户的自定义表情。
      */
     @PostMapping("/upload")
-    public Result<EmojiVO> uploadEmoji(HttpServletRequest request,
-                                       @RequestParam("file") MultipartFile file,
-                                       @RequestParam("name") String name,
-                                       @RequestParam(value = "category", required = false) String category) {
-        Long userId = (Long) request.getAttribute("userId");
-        EmojiVO result = emojiService.uploadEmoji(userId, name, file, category);
-        return Result.success(result);
+    public Result<EmojiVO> uploadEmoji(
+            HttpServletRequest request,
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("name") String name,
+            @RequestParam(value = "category", required = false) String category
+    ) {
+        Long userId = getCurrentUserId(request);
+        EmojiVO emoji = emojiService.uploadEmoji(userId, name, file, category);
+        return Result.success(emoji);
     }
 
     /**
-     * 删除自定义表情
-     *
-     * @param request HTTP 请求对象（包含用户信息）
-     * @param emojiId 表情 ID
-     * @return 操作结果
+     * 删除当前登录用户的自定义表情。
      */
     @DeleteMapping("/{emojiId}")
     public Result<Void> deleteEmoji(HttpServletRequest request, @PathVariable Long emojiId) {
-        Long userId = (Long) request.getAttribute("userId");
+        Long userId = getCurrentUserId(request);
         emojiService.deleteEmoji(userId, emojiId);
         return Result.success("删除成功", null);
+    }
+
+    private Long getCurrentUserId(HttpServletRequest request) {
+        return (Long) request.getAttribute("userId");
     }
 }
