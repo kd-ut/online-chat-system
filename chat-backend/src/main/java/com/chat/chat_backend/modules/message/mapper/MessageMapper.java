@@ -74,4 +74,15 @@ public interface MessageMapper extends BaseMapper<Message> {
      * @return 影响的行数（不归该用户所有时返回0）
      */
     Integer recallMessage(@Param("messageId") Long messageId, @Param("userId") Long userId);
+
+    /**
+     * 搜索用户相关的文本消息（作为发送方或接收方）
+     * @param userId 当前用户ID
+     * @param keyword 搜索关键词
+     * @param limit 结果数量上限
+     * @return 匹配的消息列表
+     */
+    List<Message> searchMessages(@Param("userId") Long userId,
+                                 @Param("keyword") String keyword,
+                                 @Param("limit") Integer limit);
 }

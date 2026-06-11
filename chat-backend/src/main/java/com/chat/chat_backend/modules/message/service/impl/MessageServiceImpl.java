@@ -21,7 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /** 消息服务实现，处理聊天记录查询、消息下载、标记已读、未读数统计、撤回消息等业务逻辑 @author chat-backend @since 2026-05-12 */
@@ -194,5 +196,31 @@ public class MessageServiceImpl implements MessageService {
         if (updated == 0) {
             throw new BusinessException(ResultCode.MESSAGE_RECALL_TIMEOUT);
         }
+    }
+
+    /** 搜索文本消息 @param userId 用户ID @param keyword 关键词 @param limit 数量上限 @return 搜索结果 */
+    @Override
+    public List<Map<String, Object>> searchMessages(Long userId, String keyword, Integer limit) {
+        if (limit == null || limit <= 0) limit = 20;
+        List<Message> messages = messageMapper.searchMessages(userId, keyword, limit);
+
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (Message msg : messages) {
+            // 确定对方（如果是自己发的，对方是toUserId；如果是收到的，对方是fromUserId）
+            Long otherUserId = msg.getFromUserId().equals(userId) ? msg.getToUserId() : msg.getFromUserId();
+            User otherUser = userMapper.selectById(otherUserId);
+
+            Map<String, Object> item = new HashMap<>();
+            item.put("messageId", msg.getId());
+            item.put("content", msg.getContent());
+            item.put("sendTime", msg.getSendTime() != null ? msg.getSendTime().toString() : null);
+            item.put("fromUserId", msg.getFromUserId());
+            item.put("toUserId", msg.getToUserId());
+            item.put("otherUserId", otherUserId);
+            item.put("otherNickname", otherUser != null ? otherUser.getNickname() : "未知用户");
+            item.put("otherAvatar", otherUser != null ? otherUser.getAvatar() : null);
+            result.add(item);
+        }
+        return result;
     }
 }

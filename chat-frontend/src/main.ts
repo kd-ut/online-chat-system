@@ -7,11 +7,13 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 import App from './App.vue'
 import router from './router'
+import { setupRippleDirective } from './directives/ripple'
 import './assets/styles/main.css'
 import './assets/styles/dark.css'
 import './assets/styles/tailwind.css'
 
 const app = createApp(App)
+setupRippleDirective(app)
 
 /** 注册 Element Plus 所有图标组件 */
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {

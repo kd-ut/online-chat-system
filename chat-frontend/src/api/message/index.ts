@@ -137,3 +137,20 @@ export const uploadVoiceApi = (file: File) => {
     headers: { 'Content-Type': 'multipart/form-data' }
   })
 }
+
+/** 消息搜索结果 */
+export interface MessageSearchResult {
+  messageId: number
+  content: string
+  sendTime: string
+  fromUserId: number
+  toUserId: number
+  otherUserId: number
+  otherNickname: string
+  otherAvatar: string | null
+}
+
+/** 搜索文本消息 @param keyword 关键词 @param limit 数量上限 @returns 消息搜索结果列表 */
+export const searchMessagesApi = (keyword: string, limit: number = 20) => {
+  return request.get<any, MessageSearchResult[]>('/message/search', { params: { keyword, limit } })
+}

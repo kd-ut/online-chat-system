@@ -8,6 +8,10 @@
     </div>
 
     <div class="actions">
+      <button class="search-btn" title="搜索 (Ctrl+K)" @click="openSearch">
+        <el-icon :size="18"><Search /></el-icon>
+      </button>
+
       <ThemeToggle />
 
       <el-badge :value="messageStore.unreadCount?.total || 0" :hidden="!messageStore.unreadCount?.total" class="bell-badge">
@@ -43,7 +47,7 @@
 /** 主布局头部组件，显示未读角标、用户菜单和消息盒子 @component */
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bell, Expand } from '@element-plus/icons-vue'
+import { Bell, Expand, Search } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/userStore'
 import { useMessageStore } from '@/stores/messageStore'
 import { websocketService } from '@/utils/websocket'
@@ -70,6 +74,11 @@ const handleCommand = async (command: string) => {
   } else if (command === 'admin') {
     router.push('/admin')
   }
+}
+
+/** 打开全局搜索 @returns void */
+const openSearch = () => {
+  window.dispatchEvent(new CustomEvent('open-global-search'))
 }
 
 /** 确认退出登录 @returns void */
@@ -157,6 +166,27 @@ onMounted(() => {
 
 .bell-badge :deep(.el-badge__content) {
   border: 2px solid var(--bg-color-white) !important;
+}
+
+.search-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--border-radius-small);
+  background: var(--bg-color);
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-regular);
+  transition: all 0.2s;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.search-btn:hover {
+  background: var(--color-primary-light-1);
+  color: var(--color-primary);
 }
 
 .bell-btn {

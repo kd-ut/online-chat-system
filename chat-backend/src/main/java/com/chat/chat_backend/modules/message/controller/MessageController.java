@@ -21,6 +21,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.net.URLEncoder;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 消息控制器
@@ -141,6 +142,26 @@ public class MessageController {
     public Result<UnreadCountVO> getUnreadCount(HttpServletRequest request) {
         Long userId = (Long) request.getAttribute("userId");
         UnreadCountVO result = messageService.getUnreadCount(userId);
+        return Result.success(result);
+    }
+
+    /**
+     * 搜索文本消息
+     *
+     * @param request HTTP 请求对象（包含用户信息）
+     * @param keyword 搜索关键词
+     * @param limit   结果数量上限（默认20）
+     * @return 搜索结果列表
+     */
+    @GetMapping("/search")
+    public Result<List<Map<String, Object>>> searchMessages(HttpServletRequest request,
+                                                             @RequestParam String keyword,
+                                                             @RequestParam(defaultValue = "20") Integer limit) {
+        Long userId = (Long) request.getAttribute("userId");
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return Result.success(List.of());
+        }
+        List<Map<String, Object>> result = messageService.searchMessages(userId, keyword.trim(), limit);
         return Result.success(result);
     }
 

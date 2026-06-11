@@ -1,6 +1,7 @@
 <template>
   <router-view />
   <RtcCallDialog />
+  <GlobalSearch />
 </template>
 
 <script setup lang="ts">
@@ -10,6 +11,7 @@ import { useRtcStore } from '@/stores/rtcStore'
 import { websocketService } from '@/utils/websocket'
 import { useTheme } from '@/composables/useTheme'
 import RtcCallDialog from '@/components/rtc/RtcCallDialog.vue'
+import GlobalSearch from '@/components/common/GlobalSearch.vue'
 
 const userStore = useUserStore()
 const rtcStore = useRtcStore()
