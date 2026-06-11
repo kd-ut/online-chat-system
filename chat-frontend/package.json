@@ -16,13 +16,15 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.3.1",
+    "@tailwindcss/vite": "^4.3.0",
     "axios": "^1.7.9",
     "dayjs": "^1.11.13",
     "echarts": "^6.0.0",
     "element-plus": "^2.8.8",
     "mediasoup-client": "^3.20.0",
-    "socket.io-client": "^4.8.1",
     "pinia": "^3.0.4",
+    "socket.io-client": "^4.8.1",
+    "tailwindcss": "^4.3.0",
     "vue": "^3.5.32",
     "vue-router": "^5.0.4"
   },

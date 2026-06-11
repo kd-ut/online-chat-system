@@ -235,6 +235,8 @@ const markAsRead = async () => {
 /** 收到新消息回调 @param data 消息数据 @returns void */
 const onNewMessage = (data: any) => {
   if (props.friend?.userId === data.fromUserId) {
+    // 去重：已存在相同 messageId 则不重复添加
+    if (data.messageId && messages.value.some(m => m.id === data.messageId)) return
     messages.value.push({
       id: data.messageId,
       fromUserId: data.fromUserId,

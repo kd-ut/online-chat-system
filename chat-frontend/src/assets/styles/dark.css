@@ -1,0 +1,158 @@
+/* ========================================
+ * 暗色主题 CSS 变量覆盖
+ * 触发方式: html.dark 或 [data-theme="dark"]
+ * ======================================== */
+
+html.dark {
+  /* --- 背景色体系 --- */
+  --bg-color: #141414;
+  --bg-color-white: #1a1a1a;
+  --bg-color-overlay: #1f1f1f;
+  --bg-color-elevated: #252525;
+  --bg-color-sunken: #0d0d0d;
+
+  /* --- 中性色 --- */
+  --color-white: #1a1a1a;
+  --color-black: #ffffff;
+  --color-gray-50: #1f1f1f;
+  --color-gray-100: #252525;
+  --color-gray-200: #2a2a2a;
+  --color-gray-300: #333333;
+  --color-gray-400: #4a4a4a;
+  --color-gray-500: #6b6b6b;
+  --color-gray-600: #999999;
+  --color-gray-700: #bbbbbb;
+  --color-gray-800: #dddddd;
+  --color-gray-900: #f0f0f0;
+
+  /* --- 文字色 --- */
+  --text-primary: rgba(255, 255, 255, 0.85);
+  --text-regular: rgba(255, 255, 255, 0.65);
+  --text-secondary: rgba(255, 255, 255, 0.45);
+  --text-placeholder: rgba(255, 255, 255, 0.25);
+  --text-disabled: rgba(255, 255, 255, 0.15);
+
+  /* --- 边框色 --- */
+  --border-color: #333333;
+  --border-color-light: #2a2a2a;
+  --border-color-lighter: #252525;
+  --border-color-extra-light: #1f1f1f;
+  --border-color-hover: var(--color-primary-light-6);
+
+  /* --- 阴影 (暗色下阴影变亮) --- */
+  --box-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --box-shadow-light: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --box-shadow-base: 0 2px 8px rgba(0, 0, 0, 0.5);
+  --box-shadow-dark: 0 4px 16px rgba(0, 0, 0, 0.6);
+  --box-shadow-xl: 0 8px 30px rgba(0, 0, 0, 0.7);
+  --box-shadow-2xl: 0 20px 60px rgba(0, 0, 0, 0.8);
+
+  /* --- 品牌色暗色适配 --- */
+  --color-primary-dark: #8b74f0;
+  --color-primary-light: #6c5ce7;
+  --color-primary: #a78bfa;
+  --color-primary-light-1: #1f1a3d;
+  --color-primary-light-2: #25204a;
+  --color-primary-light-3: #2d265a;
+
+  /* --- Element Plus 暗色变量 --- */
+  --el-bg-color: #1a1a1a;
+  --el-bg-color-overlay: #1f1f1f;
+  --el-bg-color-page: #141414;
+  --el-text-color-primary: rgba(255, 255, 255, 0.85);
+  --el-text-color-regular: rgba(255, 255, 255, 0.65);
+  --el-text-color-secondary: rgba(255, 255, 255, 0.45);
+  --el-text-color-placeholder: rgba(255, 255, 255, 0.25);
+  --el-border-color: #333333;
+  --el-border-color-light: #2a2a2a;
+  --el-border-color-lighter: #252525;
+  --el-border-color-extra-light: #1f1f1f;
+  --el-border-color-dark: #4a4a4a;
+  --el-fill-color: #252525;
+  --el-fill-color-light: #1f1f1f;
+  --el-fill-color-blank: #1a1a1a;
+
+  color-scheme: dark;
+}
+
+/* ===== 暗色模式特定组件覆盖 ===== */
+html.dark {
+  /* 滚动条 */
+  &::-webkit-scrollbar-thumb {
+    background: #4a4a4a;
+  }
+  &::-webkit-scrollbar-thumb:hover {
+    background: #6b6b6b;
+  }
+
+  /* ElMessage 暗色 */
+  .el-message--info {
+    background: #1f1a3d !important;
+    color: var(--color-primary) !important;
+  }
+
+  /* 表格表头暗色 */
+  .el-table th.el-table__cell {
+    background: #1f1f1f !important;
+  }
+
+  .el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+    background: #1d1d1d !important;
+  }
+
+  .el-table .el-table__body tr:hover > td.el-table__cell {
+    background: #252525 !important;
+  }
+
+  /* 下拉菜单暗色 */
+  .el-dropdown-menu__item:hover {
+    background: #252525 !important;
+  }
+
+  /* 确认框暗色 */
+  .confirm-icon svg {
+    filter: brightness(1.2);
+  }
+
+  /* 头像边框 */
+  .el-avatar {
+    border-color: #333333;
+  }
+
+  .el-badge__content {
+    border-color: #1a1a1a !important;
+  }
+
+  /* 登录卡 */
+  .login-card {
+    background-color: rgba(26, 26, 26, 0.95) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6) !important;
+  }
+
+  /* 侧边栏暗色 */
+  .sidebar {
+    background: #1a1a1a !important;
+  }
+
+  .header {
+    background: #1a1a1a !important;
+  }
+
+  .user-info:hover {
+    background: #252525 !important;
+  }
+
+  .bell-btn {
+    background: #252525 !important;
+  }
+
+  .bell-btn:hover {
+    background: #1f1a3d !important;
+  }
+
+  /* skeleton */
+  .skeleton-shimmer {
+    background: linear-gradient(90deg, #252525 25%, #2a2a2a 50%, #252525 75%);
+    background-size: 200% 100%;
+  }
+}

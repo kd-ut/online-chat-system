@@ -1,10 +1,19 @@
 <template>
   <div class="app-container" @click="unlockAudio">
-    <div class="main-layout" :class="{ 'is-resizing': isResizing }" :style="{ '--sidebar-width': sidebarWidth + 'px' }">
-      <Sidebar @select-chat="handleSelectChat" @select-group="handleSelectGroup" />
-      <div class="resize-handle" @mousedown="startResize" />
+    <div v-if="isMobile && sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false" />
+
+    <div class="main-layout" :class="{
+      'is-resizing': isResizing,
+      'is-mobile': isMobile,
+      'sidebar-open': sidebarOpen
+    }" :style="{ '--sidebar-width': isMobile ? '85%' : sidebarWidth + 'px' }">
+      <Sidebar :class="{ 'sidebar-panel': true, show: isMobile ? sidebarOpen : true }"
+        @select-chat="handleSelectChat" @select-group="handleSelectGroup" />
+
+      <div v-if="!isMobile" class="resize-handle" @mousedown="startResize" />
+
       <div class="right-panel">
-        <Header />
+        <Header @toggle-sidebar="sidebarOpen = !sidebarOpen" />
         <Content />
       </div>
     </div>
@@ -12,8 +21,8 @@
 </template>
 
 <script setup lang="ts">
-/** 主布局组件，包含侧边栏、头部和内容区域 @component */
-import { onMounted } from 'vue'
+/** 主布局组件，包含侧边栏、头部和内容区域，支持响应式适配 @component */
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import Sidebar from './Sidebar.vue'
 import Header from './Header.vue'
@@ -24,6 +33,20 @@ import { useResizable } from '@/composables'
 const router = useRouter()
 const friendStore = useFriendStore()
 
+/** 移动端侧边栏开关 */
+const sidebarOpen = ref(false)
+
+/** 是否为移动端 */
+const isMobile = ref(false)
+/** 移动端断点 */
+const MOBILE_BREAKPOINT = 768
+
+/** 检测屏幕尺寸 */
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < MOBILE_BREAKPOINT
+  if (!isMobile.value) sidebarOpen.value = false
+}
+
 const { sidebarWidth, isResizing, startResize } = useResizable({
   minWidth: 280,
   maxWidth: 800,
@@ -31,19 +54,17 @@ const { sidebarWidth, isResizing, startResize } = useResizable({
   storageKey: 'sidebar-width'
 })
 
-/** 选择好友聊天 @param friend 好友对象 @returns void */
 const handleSelectChat = (friend: any) => {
   router.push({ name: 'Main', query: { friendId: friend.userId || friend.id } })
+  if (isMobile.value) sidebarOpen.value = false
 }
 
-/** 选择群聊 @param group 群聊对象 @returns void */
 const handleSelectGroup = (group: any) => {
   router.push({ name: 'Main', query: { groupId: group.id } })
+  if (isMobile.value) sidebarOpen.value = false
 }
 
-/** 是否已完成音频解锁 */
 let audioUnlocked = false
-/** 解锁音频上下文（解决浏览器自动播放策略） @returns void */
 const unlockAudio = () => {
   if (audioUnlocked) return
   audioUnlocked = true
@@ -64,6 +85,12 @@ const unlockAudio = () => {
 
 onMounted(() => {
   friendStore.loadFriendList()
+  checkMobile()
+  window.addEventListener('resize', checkMobile)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', checkMobile)
 })
 </script>
 
@@ -113,7 +140,44 @@ onMounted(() => {
 
 .resize-handle:hover,
 .main-layout.is-resizing .resize-handle {
-  background: var(--color-primary-light);
+  background: var(--color-primary-light-5);
   opacity: 0.4;
+}
+
+/* ===== 移动端适配 ===== */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .sidebar-panel {
+    position: fixed !important;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 60;
+    transform: translateX(-100%);
+    transition: transform 0.3s var(--transition-timing);
+    width: 85% !important;
+    max-width: 380px;
+  }
+
+  .sidebar-panel.show {
+    transform: translateX(0);
+    box-shadow: 4px 0 30px rgba(0, 0, 0, 0.2);
+  }
+
+  .resize-handle {
+    display: none;
+  }
 }
 </style>

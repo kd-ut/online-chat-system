@@ -114,26 +114,26 @@ const handleRecall = async () => {
 }
 
 .message-bubble {
-  background: #ffffff;
-  color: #1f2937;
+  background: var(--bg-color-white);
+  color: var(--text-primary);
   padding: 10px 16px;
-  border-radius: 6px;
+  border-radius: 14px;
   word-wrap: break-word;
   line-height: 1.55;
   font-size: 14px;
   position: relative;
-  border: 1px solid #ececec;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .message-item:not(.own) .message-bubble {
-  border-top-left-radius: 2px;
+  border-top-left-radius: 4px;
 }
 
 .message-item.own .message-bubble {
-  background: #95ec69;
+  background: linear-gradient(135deg, #a8e6cf, #95ec69);
   color: #1f2937;
-  border: none;
-  border-top-right-radius: 2px;
+  box-shadow: 0 2px 6px rgba(149, 236, 105, 0.25);
+  border-top-right-radius: 4px;
 }
 
 .image-message {

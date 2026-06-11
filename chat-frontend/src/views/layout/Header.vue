@@ -1,10 +1,15 @@
 <template>
   <div class="header">
     <div class="logo">
+      <button class="hamburger" @click="emit('toggleSidebar')">
+        <el-icon :size="20"><Expand /></el-icon>
+      </button>
       <span>快来聊天吧</span>
     </div>
 
     <div class="actions">
+      <ThemeToggle />
+
       <el-badge :value="messageStore.unreadCount?.total || 0" :hidden="!messageStore.unreadCount?.total" class="bell-badge">
         <el-button circle @click="showMessageBox = true" class="bell-btn">
           <el-icon :size="20"><Bell /></el-icon>
@@ -38,12 +43,15 @@
 /** 主布局头部组件，显示未读角标、用户菜单和消息盒子 @component */
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bell } from '@element-plus/icons-vue'
+import { Bell, Expand } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/userStore'
 import { useMessageStore } from '@/stores/messageStore'
 import { websocketService } from '@/utils/websocket'
 import MessageBox from '@/components/message/MessageBox.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
+
+const emit = defineEmits<{ toggleSidebar: [] }>()
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -110,6 +118,26 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.hamburger {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-regular);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.hamburger:hover {
+  background: var(--bg-color);
+  color: var(--color-primary);
+}
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
 }
 .logo span {
   font-size: 18px;
