@@ -126,14 +126,14 @@ public class FriendRequestServiceImpl implements FriendRequestService {
             Friend friend1 = new Friend();
             friend1.setUserId(currentUserId);
             friend1.setFriendId(friendRequest.getFromUserId());
-            friend1.setGroupName("我的好友");
+            friend1.setGroupName("");
             friend1.setCreatedAt(LocalDateTime.now());
             friendMapper.insert(friend1);
 
             Friend friend2 = new Friend();
             friend2.setUserId(friendRequest.getFromUserId());
             friend2.setFriendId(currentUserId);
-            friend2.setGroupName("我的好友");
+            friend2.setGroupName("");
             friend2.setCreatedAt(LocalDateTime.now());
             friendMapper.insert(friend2);
         }

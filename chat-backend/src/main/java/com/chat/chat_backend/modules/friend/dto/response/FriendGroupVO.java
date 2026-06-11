@@ -13,6 +13,8 @@ import java.util.List;
  * @since 2026-05-12
  */
 public class FriendGroupVO {
+    /** 分组ID（默认分组为null） */
+    private Long groupId;
     /** 分组名称 */
     private String groupName;
     /** 该分组下的好友列表 */

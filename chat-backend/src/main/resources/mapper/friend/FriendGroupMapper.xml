@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chat.chat_backend.modules.friend.mapper.FriendGroupMapper">
+
+    <!-- 查询用户的所有分组 -->
+    <select id="findByUserId" resultType="com.chat.chat_backend.modules.friend.entity.FriendGroup">
+        SELECT * FROM friend_group
+        WHERE user_id = #{userId}
+        ORDER BY sort_order ASC, id ASC
+    </select>
+
+    <!-- 查询非空分组（分组下仍有好友的分组ID） -->
+    <select id="findNonEmptyGroupIds" resultType="java.lang.Long">
+        SELECT DISTINCT fg.id
+        FROM friend_group fg
+        INNER JOIN friend f ON f.group_name = fg.group_name AND f.user_id = fg.user_id
+        WHERE fg.user_id = #{userId}
+    </select>
+
+</mapper>

@@ -41,10 +41,12 @@ import { MoreFilled } from '@element-plus/icons-vue'
 import MiniProfile from '@/components/user/MiniProfile.vue'
 
 export interface ConversationData {
+  id: number
   userId: number
   nickname: string
   avatar: string | null
   remark: string | null
+  groupName: string
   isOnline: boolean
   unreadCount: number
   signature: string | null

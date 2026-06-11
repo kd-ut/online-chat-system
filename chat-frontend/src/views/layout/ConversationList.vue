@@ -54,10 +54,12 @@ const conversations = computed<ConversationData[]>(() => {
   for (const group of friendStore.friendList) {
     for (const friend of group.friends) {
       list.push({
+        id: friend.id,
         userId: friend.userId || friend.id,
         nickname: friend.nickname || '',
         avatar: friend.avatar || null,
         remark: friend.remark || null,
+        groupName: friend.groupName || '',
         isOnline: friend.isOnline || false,
         unreadCount: friend.unreadCount || 0,
         signature: friend.signature || null,

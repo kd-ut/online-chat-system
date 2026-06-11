@@ -10,6 +10,24 @@
         size="default"
         class="search-input"
       />
+      <el-button
+        v-if="activeNav === 'chats'"
+        class="add-friend-btn"
+        :icon="Plus"
+        size="small"
+        text
+        @click="showAddFriend = true"
+        title="添加好友"
+      />
+      <el-button
+        v-if="activeNav === 'chats'"
+        class="manage-group-btn"
+        :icon="Setting"
+        size="small"
+        text
+        @click="showGroupManage = true"
+        title="管理分组"
+      />
     </div>
 
     <!-- 内容区域 -->
@@ -54,6 +72,18 @@
         <el-button type="primary" @click="goToAdmin">进入管理后台</el-button>
       </div>
     </div>
+
+    <!-- 添加好友对话框 -->
+    <AddFriendDialog v-model="showAddFriend" @success="refreshFriendList" />
+
+    <!-- 修改备注对话框 -->
+    <EditRemarkDialog v-model="showEditRemark" :friend="selectedFriend" @success="refreshFriendList" />
+
+    <!-- 移动分组对话框 -->
+    <MoveGroupDialog v-model="showMoveGroup" :friend="selectedFriend" @success="refreshFriendList" />
+
+    <!-- 管理分组对话框 -->
+    <GroupManageDialog v-model="showGroupManage" @changed="refreshFriendList" />
   </div>
 </template>
 
@@ -61,13 +91,19 @@
 /** 中间面板容器，根据 activeNav 切换聊天/申请/群聊/印象内容 @component */
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { Search } from '@element-plus/icons-vue'
+import { ElMessageBox, ElMessage } from 'element-plus'
+import { Search, Plus, Setting } from '@element-plus/icons-vue'
 import { useFriendStore } from '@/stores/friendStore'
+import { deleteFriendApi } from '@/api/friend'
 import type { GroupVO } from '@/api/group'
 import ConversationList from './ConversationList.vue'
 import RequestList from './sidebar/RequestList.vue'
 import GroupList from './sidebar/GroupList.vue'
 import ImpressionBoard from '@/components/impression/ImpressionBoard.vue'
+import AddFriendDialog from '@/components/friend/AddFriendDialog.vue'
+import EditRemarkDialog from '@/components/friend/EditRemarkDialog.vue'
+import MoveGroupDialog from '@/components/friend/MoveGroupDialog.vue'
+import GroupManageDialog from '@/components/friend/GroupManageDialog.vue'
 
 const props = defineProps<{
   activeNav: string
@@ -91,6 +127,17 @@ const router = useRouter()
 const friendStore = useFriendStore()
 const searchQuery = ref('')
 
+/** 添加好友对话框 */
+const showAddFriend = ref(false)
+/** 修改备注对话框 */
+const showEditRemark = ref(false)
+/** 移动分组对话框 */
+const showMoveGroup = ref(false)
+/** 管理分组对话框 */
+const showGroupManage = ref(false)
+/** 当前选中的好友（用于备注/移动/删除操作） */
+const selectedFriend = ref<{ id: number; nickname: string; avatar: string | null; remark: string | null; groupName?: string } | null>(null)
+
 const searchPlaceholder = computed(() => {
   const map: Record<string, string> = {
     chats: '搜索联系人',
@@ -113,9 +160,43 @@ const handleSelectChat = (conv: any) => {
 }
 
 const handleConvCommand = (command: string, friend: any) => {
-  // 委托给父组件处理，与旧 FriendItem 行为一致
-  console.log('conv command:', command, friend)
+  selectedFriend.value = {
+    id: friend.id,
+    nickname: friend.nickname,
+    avatar: friend.avatar,
+    remark: friend.remark,
+    groupName: friend.groupName
+  }
+
+  switch (command) {
+    case 'remark':
+      showEditRemark.value = true
+      break
+    case 'move':
+      showMoveGroup.value = true
+      break
+    case 'delete':
+      ElMessageBox.confirm(
+        `确定要删除好友「${friend.remark || friend.nickname}」吗？删除后将无法恢复。`,
+        '删除好友',
+        { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
+      ).then(async () => {
+        try {
+          await deleteFriendApi(friend.id)
+          ElMessage.success('已删除好友')
+          refreshFriendList()
+        } catch (e: any) {
+          ElMessage.error(e?.message || '删除失败')
+        }
+      }).catch(() => { /* 取消 */ })
+      break
+  }
 }
+
+const refreshFriendList = () => {
+  friendStore.loadFriendList()
+}
+
 
 const goToAdmin = () => {
   router.push('/admin')
@@ -134,9 +215,16 @@ const goToAdmin = () => {
 }
 
 .panel-search {
-  padding: 12px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--border-color-light);
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.search-input {
+  flex: 1;
 }
 
 .search-input :deep(.el-input__wrapper) {
@@ -153,6 +241,21 @@ const goToAdmin = () => {
 .search-input :deep(.el-input__wrapper.is-focus) {
   background: var(--bg-color-sunken);
   box-shadow: 0 0 0 1px var(--color-primary-light-5) inset;
+}
+
+.add-friend-btn,
+.manage-group-btn {
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  color: var(--text-secondary);
+}
+
+.add-friend-btn:hover,
+.manage-group-btn:hover {
+  background: var(--bg-color-sunken);
+  color: var(--color-primary);
 }
 
 .panel-content {

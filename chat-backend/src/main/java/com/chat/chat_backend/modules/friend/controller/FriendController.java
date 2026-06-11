@@ -1,12 +1,16 @@
 package com.chat.chat_backend.modules.friend.controller;
 
 import com.chat.chat_backend.common.result.Result;
+import com.chat.chat_backend.modules.friend.dto.request.CreateGroupRequest;
 import com.chat.chat_backend.modules.friend.dto.request.HandleFriendRequest;
 import com.chat.chat_backend.modules.friend.dto.request.MoveFriendGroupRequest;
+import com.chat.chat_backend.modules.friend.dto.request.RenameGroupRequest;
 import com.chat.chat_backend.modules.friend.dto.request.SendFriendRequest;
 import com.chat.chat_backend.modules.friend.dto.response.FriendGroupVO;
 import com.chat.chat_backend.modules.friend.dto.response.FriendRequestVO;
 import com.chat.chat_backend.modules.friend.dto.response.FriendVO;
+import com.chat.chat_backend.modules.friend.entity.FriendGroup;
+import com.chat.chat_backend.modules.friend.service.FriendGroupService;
 import com.chat.chat_backend.modules.friend.service.FriendRelationService;
 import com.chat.chat_backend.modules.friend.service.FriendRequestService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +35,8 @@ public class FriendController {
     private final FriendRelationService friendRelationService;
     /** 好友请求服务 */
     private final FriendRequestService friendRequestService;
+    /** 好友分组服务 */
+    private final FriendGroupService friendGroupService;
 
     /**
      * 搜索用户
@@ -147,5 +153,65 @@ public class FriendController {
         Long userId = (Long) request.getAttribute("userId");
         friendRelationService.updateFriendRemark(userId, friendId, remark);
         return Result.success("修改成功", null);
+    }
+
+    // ===== 分组管理 =====
+
+    /**
+     * 获取好友分组列表
+     *
+     * @param request HTTP 请求对象（包含用户信息）
+     * @return 分组列表
+     */
+    @GetMapping("/groups")
+    public Result<List<FriendGroup>> listGroups(HttpServletRequest request) {
+        Long userId = (Long) request.getAttribute("userId");
+        return Result.success(friendGroupService.listGroups(userId));
+    }
+
+    /**
+     * 创建好友分组
+     *
+     * @param request HTTP 请求对象（包含用户信息）
+     * @param req     创建分组请求
+     * @return 新创建的分组
+     */
+    @PostMapping("/groups")
+    public Result<FriendGroup> createGroup(HttpServletRequest request,
+                                           @RequestBody CreateGroupRequest req) {
+        Long userId = (Long) request.getAttribute("userId");
+        return Result.success(friendGroupService.createGroup(userId, req.getGroupName()));
+    }
+
+    /**
+     * 重命名分组
+     *
+     * @param request HTTP 请求对象（包含用户信息）
+     * @param groupId 分组 ID
+     * @param req     重命名请求
+     * @return 操作结果
+     */
+    @PutMapping("/groups/{groupId}")
+    public Result<Void> renameGroup(HttpServletRequest request,
+                                     @PathVariable Long groupId,
+                                     @RequestBody RenameGroupRequest req) {
+        Long userId = (Long) request.getAttribute("userId");
+        friendGroupService.renameGroup(userId, groupId, req.getGroupName());
+        return Result.success("重命名成功", null);
+    }
+
+    /**
+     * 删除分组
+     *
+     * @param request HTTP 请求对象（包含用户信息）
+     * @param groupId 分组 ID
+     * @return 操作结果
+     */
+    @DeleteMapping("/groups/{groupId}")
+    public Result<Void> deleteGroup(HttpServletRequest request,
+                                     @PathVariable Long groupId) {
+        Long userId = (Long) request.getAttribute("userId");
+        friendGroupService.deleteGroup(userId, groupId);
+        return Result.success("删除成功", null);
     }
 }
