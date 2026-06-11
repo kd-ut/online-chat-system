@@ -4,13 +4,6 @@
     <div class="login-left">
       <div class="left-content">
         <div class="brand">
-          <svg class="brand-logo" viewBox="0 0 48 48" fill="none">
-            <circle cx="24" cy="24" r="22" stroke="rgba(255,255,255,0.3)" stroke-width="1.5" />
-            <circle cx="24" cy="24" r="15" stroke="rgba(255,255,255,0.15)" stroke-width="1" stroke-dasharray="6 4" />
-            <path d="M16 22 Q24 36 32 22" stroke="white" stroke-width="2.2" stroke-linecap="round" fill="none" opacity="0.9" />
-            <circle cx="20" cy="20" r="2.5" fill="white" opacity="0.8" />
-            <circle cx="28" cy="20" r="2.5" fill="white" opacity="0.8" />
-          </svg>
           <h2>闪聊 FlashChat</h2>
           <p class="brand-desc">安全 · 快速 · 实时沟通</p>
         </div>
@@ -141,7 +134,7 @@ const goToRegister = () => router.push('/register')
 
 /* ===== 左侧品牌区 ===== */
 .login-left {
-  width: 46%;
+  width: 42%;
   background: linear-gradient(160deg, #4a3fd8 0%, #6c5ce7 40%, #8b74f0 100%);
   display: flex;
   align-items: center;
@@ -159,18 +152,12 @@ const goToRegister = () => router.push('/register')
 }
 
 .brand {
-  margin-bottom: 48px;
-}
-
-.brand-logo {
-  width: 48px;
-  height: 48px;
-  margin-bottom: 16px;
+  margin-bottom: 40px;
 }
 
 .brand h2 {
-  margin: 0 0 6px;
-  font-size: 28px;
+  margin: 0 0 8px;
+  font-size: 32px;
   font-weight: 800;
   letter-spacing: 1px;
 }
