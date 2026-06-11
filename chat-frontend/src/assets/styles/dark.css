@@ -155,4 +155,50 @@ html.dark {
     background: linear-gradient(90deg, #252525 25%, #2a2a2a 50%, #252525 75%);
     background-size: 200% 100%;
   }
+
+  /* ===== 三栏布局暗色覆盖 ===== */
+  /* 导航栏 */
+  .navbar {
+    background: #161616 !important;
+  }
+
+  .nav-btn:hover,
+  .nav-btn.active {
+    background: #1f1a3d !important;
+  }
+
+  /* 聊天列表面板 */
+  .chatlist-panel {
+    background: #1a1a1a !important;
+  }
+
+  .panel-search .search-input .el-input__wrapper {
+    background: #252525 !important;
+  }
+
+  .panel-search .search-input .el-input__wrapper:hover {
+    background: #2a2a2a !important;
+  }
+
+  /* 会话条目 */
+  .conv-item:hover {
+    background: #252525 !important;
+  }
+
+  .conv-item.active {
+    background: #1f1a3d !important;
+  }
+
+  .conv-item.active .conv-avatar .el-avatar {
+    border-color: var(--color-primary-light-6);
+  }
+
+  .conv-item.active .online-dot {
+    border-color: #1f1a3d;
+  }
+
+  /* 移动端底部导航栏 */
+  .mobile-navbar {
+    background: #1a1a1a !important;
+  }
 }

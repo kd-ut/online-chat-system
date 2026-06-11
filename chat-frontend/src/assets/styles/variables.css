@@ -59,6 +59,8 @@
   --sidebar-width: 380px;
   --header-height: 64px;
   --admin-sidebar-width: 240px;
+  --navbar-width: 64px;
+  --chatlist-width: 320px;
 
   /* ===== 圆角系统 ===== */
   --border-radius-xs: 4px;

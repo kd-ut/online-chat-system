@@ -1,18 +1,21 @@
 <template>
   <div class="header">
     <div class="logo">
+      <!-- 移动端：hamburger 按钮 -->
       <button class="hamburger" @click="emit('toggleSidebar')">
         <el-icon :size="20"><Expand /></el-icon>
       </button>
-      <span>快来聊天吧</span>
+      <span class="desktop-only">快来聊天吧</span>
     </div>
 
     <div class="actions">
-      <button class="search-btn" title="搜索 (Ctrl+K)" @click="openSearch">
+      <!-- 移动端：搜索和主题 -->
+      <button class="search-btn mobile-only" title="搜索 (Ctrl+K)" @click="openSearch">
         <el-icon :size="18"><Search /></el-icon>
       </button>
-
-      <ThemeToggle />
+      <div class="mobile-only">
+        <ThemeToggle />
+      </div>
 
       <el-badge :value="messageStore.unreadCount?.total || 0" :hidden="!messageStore.unreadCount?.total" class="bell-badge">
         <el-button circle @click="showMessageBox = true" class="bell-btn">
@@ -25,7 +28,7 @@
           <el-avatar :size="36" :src="userStore.userInfo?.avatar">
             {{ userStore.userInfo?.nickname?.charAt(0) || 'U' }}
           </el-avatar>
-          <span>{{ userStore.userInfo?.nickname }}</span>
+          <span class="desktop-only">{{ userStore.userInfo?.nickname }}</span>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
@@ -113,7 +116,7 @@ onMounted(() => {
 <style scoped>
 .header {
   height: var(--header-height);
-  padding: 0 24px;
+  padding: 0 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -121,7 +124,17 @@ onMounted(() => {
   flex-shrink: 0;
   position: relative;
   z-index: 10;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+/* 桌面端隐藏，移动端显示 */
+.mobile-only { display: none; }
+.desktop-only { display: inline; }
+
+@media (max-width: 768px) {
+  .mobile-only { display: flex; }
+  .desktop-only { display: none; }
+  .header { padding: 0 12px; }
 }
 .logo {
   display: flex;
