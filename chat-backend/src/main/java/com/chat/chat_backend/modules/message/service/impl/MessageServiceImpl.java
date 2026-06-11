@@ -20,10 +20,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /** 消息服务实现，处理聊天记录查询、消息下载、标记已读、未读数统计、撤回消息等业务逻辑 @author chat-backend @since 2026-05-12 */
@@ -48,12 +45,23 @@ public class MessageServiceImpl implements MessageService {
         List<Message> messages = messageMapper.findChatHistory(userId, friendId, offset, size);
         Long total = messageMapper.countChatHistory(userId, friendId);
 
-        User friend = userMapper.selectById(friendId);
-        User currentUser = userMapper.selectById(userId);
+        // 批量查询涉及的用户，避免 N+1 问题
+        Set<Long> userIds = new HashSet<>();
+        userIds.add(userId);
+        userIds.add(friendId);
+        for (Message msg : messages) {
+            userIds.add(msg.getFromUserId());
+            userIds.add(msg.getToUserId());
+        }
+        Map<Long, User> userMap = userMapper.selectBatchIds(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+
+        User friend = userMap.get(friendId);
+        User currentUser = userMap.get(userId);
 
         List<MessageVO> voList = messages.stream()
                 .map(msg -> {
-                    User fromUser = userMapper.selectById(msg.getFromUserId());
+                    User fromUser = userMap.get(msg.getFromUserId());
                     String fromUserNickname = fromUser != null ? fromUser.getNickname() : "未知用户";
                     String fromUserAvatar = fromUser != null ? fromUser.getAvatar() : null;
 
@@ -109,9 +117,17 @@ public class MessageServiceImpl implements MessageService {
 
         List<Message> messages = messageMapper.findChatHistory(userId, friendId, 0, limit);
 
+        // 批量查询涉及的用户，避免 N+1 问题
+        Set<Long> userIds = new HashSet<>();
+        for (Message msg : messages) {
+            userIds.add(msg.getFromUserId());
+        }
+        Map<Long, User> userMap = userMapper.selectBatchIds(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+
         return messages.stream()
                 .map(msg -> {
-                    User fromUser = userMapper.selectById(msg.getFromUserId());
+                    User fromUser = userMap.get(msg.getFromUserId());
                     String fromUserNickname = fromUser != null ? fromUser.getNickname() : "未知用户";
 
                     String content = msg.getContent();
@@ -149,10 +165,21 @@ public class MessageServiceImpl implements MessageService {
         // 使用新的 DTO 类
         List<UnreadGroupVO> groups = messageMapper.groupUnreadByFriend(userId);
 
+        // 批量查询用户信息，避免 N+1
+        Set<Long> groupUserIds = new HashSet<>();
+        for (UnreadGroupVO group : groups) {
+            if (group.getFromUserId() != null) {
+                groupUserIds.add(group.getFromUserId());
+            }
+        }
+        Map<Long, User> groupUserMap = groupUserIds.isEmpty() ? Collections.emptyMap()
+                : userMapper.selectBatchIds(groupUserIds).stream()
+                    .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+
         List<UnreadCountVO.UnreadDetail> details = new ArrayList<>();
         for (UnreadGroupVO group : groups) {
             if (group.getFromUserId() == null) continue;
-            User friend = userMapper.selectById(group.getFromUserId());
+            User friend = groupUserMap.get(group.getFromUserId());
             if (friend != null) {
                 details.add(UnreadCountVO.UnreadDetail.builder()
                         .friendId(group.getFromUserId())
@@ -204,11 +231,20 @@ public class MessageServiceImpl implements MessageService {
         if (limit == null || limit <= 0) limit = 20;
         List<Message> messages = messageMapper.searchMessages(userId, keyword, limit);
 
+        // 批量查询涉及的用户，避免 N+1 问题
+        Set<Long> userIds = new HashSet<>();
+        for (Message msg : messages) {
+            userIds.add(msg.getFromUserId());
+            userIds.add(msg.getToUserId());
+        }
+        Map<Long, User> userMap = userMapper.selectBatchIds(userIds).stream()
+                .collect(Collectors.toMap(User::getId, u -> u, (a, b) -> a));
+
         List<Map<String, Object>> result = new ArrayList<>();
         for (Message msg : messages) {
             // 确定对方（如果是自己发的，对方是toUserId；如果是收到的，对方是fromUserId）
             Long otherUserId = msg.getFromUserId().equals(userId) ? msg.getToUserId() : msg.getFromUserId();
-            User otherUser = userMapper.selectById(otherUserId);
+            User otherUser = userMap.get(otherUserId);
 
             Map<String, Object> item = new HashMap<>();
             item.put("messageId", msg.getId());

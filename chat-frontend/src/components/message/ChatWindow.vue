@@ -110,6 +110,18 @@ const messageListRef = ref()
 const loadHistory = async (reset = true) => {
   if (!props.friend?.userId) return
   if (reset) {
+    // 优先使用缓存，避免重复请求
+    const cached = messageStore.getCachedMessages(props.friend.userId)
+    if (cached) {
+      messages.value = cached.messages
+      page.value = cached.page
+      hasMore.value = cached.hasMore
+      totalMessageCount.value = cached.total
+      loading.value = false
+      await nextTick()
+      messageListRef.value?.scrollToBottom()
+      return
+    }
     page.value = 1
     hasMore.value = true
     messages.value = []
@@ -132,9 +144,26 @@ const loadHistory = async (reset = true) => {
     hasMore.value = newMessages.length > 0
     page.value++
 
+    // 首页加载后写入缓存
     if (reset) {
+      messageStore.setCachedMessages(props.friend.userId, {
+        messages: messages.value,
+        page: page.value,
+        hasMore: hasMore.value,
+        total: totalMessageCount.value,
+        timestamp: Date.now()
+      })
       await nextTick()
       messageListRef.value?.scrollToBottom()
+    } else if (newMessages.length > 0) {
+      // loadMore 后也更新缓存
+      messageStore.setCachedMessages(props.friend.userId, {
+        messages: messages.value,
+        page: page.value,
+        hasMore: hasMore.value,
+        total: totalMessageCount.value,
+        timestamp: Date.now()
+      })
     }
   } catch (error) {
     ElMessage.error('加载消息失败')
@@ -152,7 +181,7 @@ const loadMore = () => {
 
 /** 添加本地消息（发送后立即显示） @param content 内容 @param messageType 消息类型 @param duration 语音时长 @returns void */
 const addLocalMessage = (content: string, messageType: number, duration?: number) => {
-  messages.value.push({
+  const msg = {
     id: Date.now() + Math.random(),
     fromUserId: currentUserId,
     fromUserNickname: userStore.userInfo?.nickname || '我',
@@ -162,7 +191,9 @@ const addLocalMessage = (content: string, messageType: number, duration?: number
     duration,
     sendTime: new Date().toISOString(),
     isRecalled: false
-  })
+  }
+  messages.value.push(msg)
+  messageStore.appendToCache(props.friend.userId, msg)
   messageListRef.value?.scrollToBottom()
 }
 
@@ -248,7 +279,7 @@ const onNewMessage = (data: any) => {
   if (props.friend?.userId === data.fromUserId) {
     // 去重：已存在相同 messageId 则不重复添加
     if (data.messageId && messages.value.some(m => m.id === data.messageId)) return
-    messages.value.push({
+    const msg = {
       id: data.messageId,
       fromUserId: data.fromUserId,
       fromUserNickname: data.fromUserNickname,
@@ -258,7 +289,9 @@ const onNewMessage = (data: any) => {
       duration: data.duration,
       sendTime: data.sendTime,
       isRecalled: false
-    })
+    }
+    messages.value.push(msg)
+    messageStore.appendToCache(props.friend.userId, msg)
     messageListRef.value?.scrollToBottom()
     friendStore.clearUnreadForFriend(data.fromUserId)
   }

@@ -64,6 +64,7 @@ import { ElMessage } from 'element-plus'
 import { ChatDotRound, Message, ChatLineSquare, Star } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/userStore'
 import { useFriendStore } from '@/stores/friendStore'
+import { useMessageStore } from '@/stores/messageStore'
 import { handleFriendRequestApi } from '@/api/friend'
 import { getGroupListApi, createGroupApi, type GroupVO } from '@/api/group'
 import { getFriendListApi, type FriendVO } from '@/api/friend'
@@ -79,6 +80,7 @@ const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const friendStore = useFriendStore()
+const messageStore = useMessageStore()
 
 // ===== 导航状态 =====
 const activeNav = ref('chats')
@@ -125,9 +127,9 @@ const checkMobile = () => {
 
 // ===== 聊天列表面板可拖拽 =====
 const { sidebarWidth: chatlistWidth, isResizing, startResize } = useResizable({
-  minWidth: 280,
-  maxWidth: 450,
-  defaultWidth: 320,
+  minWidth: 240,
+  maxWidth: 380,
+  defaultWidth: 280,
   storageKey: 'chatlist-width'
 })
 
@@ -228,6 +230,8 @@ const onGroupMessage = (data: any) => {
 const onPrivateMessage = (data: any) => {
   if (currentChatUserId.value !== data.fromUserId) {
     friendStore.incrementUnreadForFriend(data.fromUserId)
+    // 有新消息到来，清除该好友的消息缓存，确保切换回来时加载最新数据
+    messageStore.invalidateCache(data.fromUserId)
   }
 }
 
