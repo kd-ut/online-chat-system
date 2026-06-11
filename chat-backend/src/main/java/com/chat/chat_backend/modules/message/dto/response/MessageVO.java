@@ -27,7 +27,7 @@ public class MessageVO {
     private Long toUserId;
     /** 接收方昵称 */
     private String toUserNickname;
-    /** 消息类型：1-文字，2-图片，3-系统消息/评价通知 */
+    /** 消息类型：1-文字，2-图片，3-文件，4-语音，5-语音通话，6-视频通话 */
     private Integer messageType;
     /** 消息内容 */
     private String content;

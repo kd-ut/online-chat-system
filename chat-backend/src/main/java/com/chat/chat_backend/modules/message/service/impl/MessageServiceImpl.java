@@ -216,6 +216,7 @@ public class MessageServiceImpl implements MessageService {
             item.put("sendTime", msg.getSendTime() != null ? msg.getSendTime().toString() : null);
             item.put("fromUserId", msg.getFromUserId());
             item.put("toUserId", msg.getToUserId());
+            item.put("messageType", msg.getMessageType());
             item.put("otherUserId", otherUserId);
             item.put("otherNickname", otherUser != null ? otherUser.getNickname() : "未知用户");
             item.put("otherAvatar", otherUser != null ? otherUser.getAvatar() : null);

@@ -22,6 +22,9 @@
         <VoiceMessage v-else-if="message.messageType === 4 && !message.isRecalled" :url="message.content"
           :duration="message.duration" />
 
+        <CallRecord v-else-if="(message.messageType === 5 || message.messageType === 6) && !message.isRecalled"
+          :call-type="message.messageType === 5 ? 'voice' : 'video'" :duration="message.content" />
+
         <span v-else-if="message.isRecalled" class="recalled">
           {{ isOwn ? '你撤回了一条消息' : '对方撤回了一条消息' }}
         </span>
@@ -41,6 +44,7 @@ import { computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatRelativeTime } from '@/utils/date'
 import { recallMessageApi } from '@/api/message'
+import CallRecord from '../messageBubble/CallRecord.vue'
 import VoiceMessage from './VoiceMessage.vue'
 
 /** 组件属性：消息对象、是否为本人发送、是否显示信息 */

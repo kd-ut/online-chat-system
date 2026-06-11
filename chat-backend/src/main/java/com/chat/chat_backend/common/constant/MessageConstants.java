@@ -16,6 +16,10 @@ public class MessageConstants {
     public static final int MSG_TYPE_FILE = 3;
     /** 语音消息 */
     public static final int MSG_TYPE_VOICE = 4;
+    /** 语音通话记录 */
+    public static final int MSG_TYPE_VOICE_CALL = 5;
+    /** 视频通话记录 */
+    public static final int MSG_TYPE_VIDEO_CHAT = 6;
 
     // ========== 消息状态 ==========
     /** 消息未读 */

@@ -16,7 +16,7 @@ export interface MessageVO {
   toUserId: number
   /** 接收者昵称 */
   toUserNickname: string
-  /** 消息类型：1-文本 2-图片 3-文件 4-语音 */
+  /** 消息类型：1-文本 2-图片 3-文件 4-语音 5-语音通话 6-视频通话 */
   messageType: number
   /** 消息内容 */
   content: string
@@ -142,6 +142,7 @@ export const uploadVoiceApi = (file: File) => {
 export interface MessageSearchResult {
   messageId: number
   content: string
+  messageType: number
   sendTime: string
   fromUserId: number
   toUserId: number

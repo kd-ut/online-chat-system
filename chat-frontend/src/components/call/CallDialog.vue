@@ -38,7 +38,7 @@ const props = defineProps<{
 }>()
 
 /** 组件事件：更新对话框状态、结束通话、通话被接受 */
-const emit = defineEmits(['update:modelValue', 'endCall', 'callAccepted'])
+const emit = defineEmits(['update:modelValue', 'endCall', 'callAccepted', 'callRecord'])
 
 /** 对话框可见性状态 */
 const visible = ref(false)
@@ -133,6 +133,8 @@ const hangupCall = () => {
   if (hangupSent) return
   if (targetUserId.value) {
     websocketService.sendCallSignal({ action: 'hangup', toUserId: targetUserId.value, callType: props.callType })
+    // 发送通话记录
+    emit('callRecord', { callType: props.callType, duration: callDuration.value })
   }
   doHangup(null)
 }

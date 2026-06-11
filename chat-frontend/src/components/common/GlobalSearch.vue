@@ -122,6 +122,29 @@ const results = computed(() => [...contactResults.value, ...messageResults.value
 /** 搜索防抖定时器 */
 let debounceTimer: ReturnType<typeof setTimeout> | null = null
 
+/** 格式化消息搜索预览文本（通话记录类型显示中文标签） */
+const formatMessagePreview = (content: string, messageType: number) => {
+  if (messageType === 5) {
+    const sec = parseInt(content, 10)
+    if (!isNaN(sec) && sec > 0) {
+      const m = Math.floor(sec / 60)
+      const s = sec % 60
+      return `语音通话 ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    }
+    return '语音通话'
+  }
+  if (messageType === 6) {
+    const sec = parseInt(content, 10)
+    if (!isNaN(sec) && sec > 0) {
+      const m = Math.floor(sec / 60)
+      const s = sec % 60
+      return `视频通话 ${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+    }
+    return '视频通话'
+  }
+  return content.length > 60 ? content.slice(0, 60) + '...' : content
+}
+
 /** 搜索联系人 */
 const searchContacts = (kw: string): SearchItem[] => {
   const found: SearchItem[] = []
@@ -151,7 +174,7 @@ const searchMessages = async (kw: string) => {
       id: `msg-${m.messageId}`,
       name: m.otherNickname || '聊天记录',
       resultType: 'message' as const,
-      preview: m.content.length > 60 ? m.content.slice(0, 60) + '...' : m.content,
+      preview: formatMessagePreview(m.content, m.messageType),
       targetId: m.otherUserId
     }))
   } catch {

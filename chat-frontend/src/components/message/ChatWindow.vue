@@ -10,10 +10,10 @@
       @start-video-call="startVideoCall" />
 
     <CallDialog v-model="voiceCallVisible" :target-user="friend" call-type="voice" :is-caller="true"
-      @end-call="endVoiceCall" />
+      @end-call="endVoiceCall" @call-record="onCallRecord" />
     <CallDialog v-model="incomingCallVisible" :target-user="incomingCaller" :call-type="incomingCallType"
       :is-caller="false" :initial-offer="pendingOffer" @end-call="endIncomingCall"
-      @call-accepted="stopRingtone" />
+      @call-accepted="stopRingtone" @call-record="onCallRecord" />
 
     <DownloadDialog v-model="showDownloadDialog" :friend-id="friend?.userId" :friend-name="friend?.nickname"
       :total-messages="totalMessageCount" :max-limit="maxDownloadLimit" @download="handleDownload" />
@@ -214,6 +214,17 @@ const endIncomingCall = () => {
   stopRingtone()
 }
 
+/** 处理通话记录（语音/视频通话结束后持久化到聊天记录） */
+const onCallRecord = (data: { callType: 'voice' | 'video'; duration: number }) => {
+  const messageType = data.callType === 'voice' ? 5 : 6
+  const durationSec = data.duration || 0
+  const content = String(durationSec)
+  addLocalMessage(content, messageType)
+  if (props.friend?.userId) {
+    websocketService.sendMessage(props.friend.userId, content, messageType)
+  }
+}
+
 /** 下载聊天记录 @param limit 下载条数 @returns Promise<void> */
 const handleDownload = async (limit: number) => {
   try {
@@ -283,12 +294,18 @@ let unsubCallSignal: (() => void) | null = null
 onMounted(() => {
   unsubMessage = websocketService.onMessage(onNewMessage)
   unsubCallSignal = websocketService.onCallSignal(onCallSignal)
+  // SFU 视频通话结束后生成聊天记录
+  rtcStore.onCallRecord((data) => {
+    const durationSec = data.duration || 0
+    addLocalMessage(String(durationSec), 6)
+  })
 })
 
 onUnmounted(() => {
   if (unsubMessage) { unsubMessage(); unsubMessage = null }
   if (unsubCallSignal) { unsubCallSignal(); unsubCallSignal = null }
   if (props.friend) markAsRead()
+  rtcStore.onCallRecord(null)
 })
 </script>
 

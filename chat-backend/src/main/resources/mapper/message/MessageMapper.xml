@@ -77,7 +77,7 @@
     <select id="searchMessages" resultType="com.chat.chat_backend.modules.message.entity.Message">
         SELECT * FROM message
         WHERE (from_user_id = #{userId} OR to_user_id = #{userId})
-          AND message_type = 1
+          AND message_type IN (1, 5, 6)
           AND content LIKE CONCAT('%', #{keyword}, '%')
           AND recall_time IS NULL
         ORDER BY send_time DESC
