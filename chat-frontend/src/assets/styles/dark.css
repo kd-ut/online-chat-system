@@ -197,6 +197,15 @@ html.dark {
     border-color: #1f1a3d;
   }
 
+  /* 分组标题 */
+  .group-header {
+    background: #1a1a1a !important;
+  }
+
+  .group-header:hover {
+    background: #1f1f1f !important;
+  }
+
   /* 移动端底部导航栏 */
   .mobile-navbar {
     background: #1a1a1a !important;

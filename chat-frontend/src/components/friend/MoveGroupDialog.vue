@@ -75,15 +75,15 @@ const moving = ref(false)
 const currentGroupName = computed(() => {
   if (!props.friend) return ''
   const gn = props.friend.groupName || ''
-  return gn === '' ? '默认' : gn
+  return gn === '' ? ' ' : gn
 })
 
 const availableGroups = computed(() => {
   const groups: { id: string; name: string; friendCount: number }[] = [
-    { id: 'default', name: '默认', friendCount: 0 }
+    { id: 'default', name: ' ', friendCount: 0 }
   ]
   for (const g of friendStore.friendList) {
-    if (g.groupName === '默认' || g.groupName === '') {
+    if (g.groupName === ' ' || g.groupName === '') {
       groups[0].friendCount = g.friends.length
     } else {
       groups.push({

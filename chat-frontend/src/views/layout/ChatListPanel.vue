@@ -160,8 +160,9 @@ const handleSelectChat = (conv: any) => {
 }
 
 const handleConvCommand = (command: string, friend: any) => {
+  // 后端 API 的 friendId 参数是好友的用户ID（userId），非关系ID（id）
   selectedFriend.value = {
-    id: friend.id,
+    id: friend.userId,
     nickname: friend.nickname,
     avatar: friend.avatar,
     remark: friend.remark,
@@ -182,7 +183,7 @@ const handleConvCommand = (command: string, friend: any) => {
         { confirmButtonText: '删除', cancelButtonText: '取消', type: 'warning' }
       ).then(async () => {
         try {
-          await deleteFriendApi(friend.id)
+          await deleteFriendApi(friend.userId)
           ElMessage.success('已删除好友')
           refreshFriendList()
         } catch (e: any) {

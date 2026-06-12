@@ -5,7 +5,7 @@
       <div class="group-list">
         <div class="group-item default-group">
           <el-icon :size="16"><Folder /></el-icon>
-          <span class="group-name">默认</span>
+          <span class="group-name"> </span>
           <span class="group-hint">系统默认</span>
         </div>
         <div

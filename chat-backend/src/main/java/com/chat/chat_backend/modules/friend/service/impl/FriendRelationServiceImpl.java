@@ -144,7 +144,7 @@ public class FriendRelationServiceImpl implements FriendRelationService {
             // 默认分组始终显示
             result.add(FriendGroupVO.builder()
                     .groupId(entry.getValue())
-                    .groupName(gn.isEmpty() ? "默认" : gn)
+                    .groupName(gn.isEmpty() ? " " : gn)
                     .friends(fList)
                     .build());
         }
