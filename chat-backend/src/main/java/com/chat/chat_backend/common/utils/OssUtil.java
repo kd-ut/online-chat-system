@@ -101,7 +101,7 @@ public class OssUtil {
 
         String dir = folder + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
         String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String extension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : "";
         String newFileName = UUID.randomUUID() + extension;
         String objectName = dir + "/" + newFileName;
 

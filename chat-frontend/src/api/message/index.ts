@@ -124,18 +124,14 @@ export const recallMessageApi = (messageId: number) => {
 export const uploadImageApi = (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
-  return request.post<any, string>('/message/upload/image', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
+  return request.post<any, string>('/message/upload/image', formData)
 }
 
 /** 上传语音 @param file 语音文件 @returns 语音文件URL */
 export const uploadVoiceApi = (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
-  return request.post<any, string>('/message/upload/voice', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
+  return request.post<any, string>('/message/upload/voice', formData)
 }
 
 /** 消息搜索结果 */
