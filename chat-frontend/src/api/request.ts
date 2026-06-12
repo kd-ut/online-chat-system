@@ -23,16 +23,22 @@ const request: AxiosInstance = axios.create({
   }
 })
 
-/** 请求拦截器：自动注入 Token */
+/** 请求拦截器：自动注入 Token，FormData 请求移除 Content-Type 让浏览器自动设置 boundary */
 request.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const userStore = useUserStore()
     const token = userStore.token
-    
+
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
-    
+
+    // FormData 请求需要浏览器自动设置 Content-Type（含 boundary 分隔符）
+    // 必须删除实例默认的 application/json，否则 Spring 会报 "not a multipart request"
+    if (config.data instanceof FormData && config.headers) {
+      delete config.headers['Content-Type']
+    }
+
     return config
   },
   (error) => {
