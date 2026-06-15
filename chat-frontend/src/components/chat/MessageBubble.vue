@@ -8,7 +8,14 @@
         <span class="name">{{ message.fromUserNickname }}</span>
         <span class="time">{{ formatRelativeTime(message.sendTime) }}</span>
       </div>
-      <div class="message-bubble" :class="{ recalled: message.isRecalled }">
+      <div class="message-bubble" :class="{ recalled: message.isRecalled }"
+        @mouseenter="onBubbleEnter" @mouseleave="onBubbleLeave">
+        <!-- 被引用消息卡片 -->
+        <div v-if="message.repliedMessage && !message.isRecalled" class="replied-card" @click.stop>
+          <div class="replied-name">{{ message.repliedMessage.fromUserNickname }}</div>
+          <div class="replied-content">{{ message.repliedMessage.content || '消息已撤回' }}</div>
+        </div>
+
         <span v-if="message.messageType === 1 && !message.isRecalled">{{ message.content }}</span>
 
         <div v-else-if="message.messageType === 2 && !message.isRecalled" class="image-message">
@@ -31,8 +38,13 @@
 
         <span v-else>{{ message.content }}</span>
 
-        <el-button v-if="isOwn && !message.isRecalled && canRecall" class="recall-btn" text size="small"
-          @click.stop="handleRecall">撤回</el-button>
+        <!-- 操作按钮组：JS 定时器控制显隐，上下排列 -->
+        <div v-show="showActions" class="action-btns" @mouseenter="onActionsEnter" @mouseleave="onActionsLeave">
+          <el-button v-if="isOwn && !message.isRecalled && canRecall" class="action-btn recall-btn" text size="small"
+            @click.stop="handleRecall">撤回</el-button>
+          <el-button v-if="!message.isRecalled" class="action-btn reply-btn" text size="small"
+            @click.stop="$emit('reply', message)">回复</el-button>
+        </div>
       </div>
     </div>
   </div>
@@ -40,7 +52,7 @@
 
 <script setup lang="ts">
 /** 聊天消息气泡组件，支持文字/图片/语音/撤回消息展示 @component */
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { formatRelativeTime } from '@/utils/date'
 import { recallMessageApi } from '@/api/message'
@@ -52,6 +64,11 @@ const props = defineProps<{
   message: any
   isOwn: boolean
   showInfo?: boolean
+}>()
+
+/** 组件事件：回复消息 */
+defineEmits<{
+  (e: 'reply', message: any): void
 }>()
 
 /** 撤回时限：2 分钟（毫秒） */
@@ -78,6 +95,32 @@ const handleRecall = async () => {
   } catch {
     ElMessage.error('撤回失败')
   }
+}
+
+/** JS 定时器控制按钮显隐：鼠标离开气泡后 500ms 延迟隐藏，避免误触消失 */
+const showActions = ref(false)
+let hideTimer: ReturnType<typeof setTimeout> | null = null
+
+const clearHideTimer = () => {
+  if (hideTimer) { clearTimeout(hideTimer); hideTimer = null }
+}
+
+const onBubbleEnter = () => {
+  clearHideTimer()
+  showActions.value = true
+}
+
+const onBubbleLeave = () => {
+  hideTimer = setTimeout(() => { showActions.value = false }, 200)
+}
+
+const onActionsEnter = () => {
+  clearHideTimer()
+  showActions.value = true
+}
+
+const onActionsLeave = () => {
+  hideTimer = setTimeout(() => { showActions.value = false }, 200)
 }
 </script>
 
@@ -159,22 +202,91 @@ const handleRecall = async () => {
   border-radius: 2px;
 }
 
-.message-bubble:hover .recall-btn {
-  display: inline-flex;
-}
-
-.recall-btn {
+/* 操作按钮组：上下排列，绝对定位在气泡上方 */
+.action-btns {
   position: absolute;
-  top: -28px;
+  top: -52px;
   right: 0;
-  display: none;
-  font-size: 11px;
-  color: var(--color-primary);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  z-index: 5;
 }
 
-.message-item.own .recall-btn {
-  color: white;
-  opacity: 0.8;
+.action-btn {
+  font-size: 11px;
+  height: 22px;
+  width: 48px;
+  padding: 0;
+  border-radius: 4px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 对方消息气泡上的按钮 */
+.message-item:not(.own) .action-btn {
+  color: var(--text-secondary);
+  background: var(--bg-color-elevated);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.message-item:not(.own) .action-btn:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light-1);
+}
+
+/* 自己的消息气泡上的按钮 */
+.message-item.own .action-btn {
+  color: rgba(31, 41, 55, 0.75);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+.message-item.own .action-btn:hover {
+  color: #1f2937;
+  background: rgba(255, 255, 255, 0.95);
+}
+
+/* 被引用消息卡片 */
+.replied-card {
+  background: rgba(0, 0, 0, 0.05);
+  border-left: 3px solid var(--color-primary);
+  border-radius: 4px;
+  padding: 4px 10px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  cursor: default;
+}
+
+.replied-name {
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-bottom: 2px;
+  font-size: 11px;
+}
+
+.replied-content {
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+}
+
+.message-item.own .replied-card {
+  background: rgba(255, 255, 255, 0.2);
+  border-left-color: rgba(255, 255, 255, 0.6);
+}
+
+.message-item.own .replied-name {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.message-item.own .replied-content {
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .recalled {

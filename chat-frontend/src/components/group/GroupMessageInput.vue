@@ -1,5 +1,15 @@
 <template>
   <div class="message-area">
+    <!-- 引用消息预览栏 -->
+    <div v-if="replyToMessage" class="reply-preview">
+      <div class="reply-info">
+        <span class="reply-label">回复</span>
+        <span class="reply-name">{{ replyToMessage.fromUserNickname }}</span>
+        <span class="reply-content">{{ truncateText(replyToMessage.content, 50) }}</span>
+      </div>
+      <button class="reply-close" @click="$emit('cancelReply')">&times;</button>
+    </div>
+
     <div class="input-row">
       <div class="textarea-wrap">
         <textarea
@@ -23,15 +33,23 @@
 /** 群聊消息输入组件，WeChat 风格布局，支持禁言状态 @component */
 import { ref } from 'vue'
 
-/** 组件属性：是否被禁言 */
-defineProps<{
+/** 组件属性：是否被禁言、引用消息 */
+const props = defineProps<{
   muted?: boolean
+  replyToMessage?: any
 }>()
 
-/** 组件事件：发送消息 */
+/** 组件事件：发送消息、取消引用 */
 const emit = defineEmits<{
-  (e: 'send', content: string): void
+  (e: 'send', content: string, replyToId?: number): void
+  (e: 'cancelReply'): void
 }>()
+
+/** 截断文本 @param text 原文 @param maxLen 最大长度 */
+const truncateText = (text: string, maxLen: number) => {
+  if (!text) return ''
+  return text.length > maxLen ? text.slice(0, maxLen) + '...' : text
+}
 
 /** 输入框内容 */
 const content = ref('')
@@ -57,7 +75,7 @@ const autoResize = () => {
 /** 发送消息 */
 const handleSend = () => {
   if (!content.value.trim()) return
-  emit('send', content.value)
+  emit('send', content.value, props.replyToMessage?.id)
   content.value = ''
   const el = textareaRef.value
   if (el) { el.style.height = 'auto' }
@@ -65,6 +83,58 @@ const handleSend = () => {
 </script>
 
 <style scoped>
+.reply-preview {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--bg-color);
+  border-bottom: 1px solid var(--border-color);
+  font-size: 13px;
+}
+
+.reply-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex: 1;
+}
+
+.reply-label {
+  color: var(--color-primary);
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.reply-name {
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
+
+.reply-content {
+  color: var(--text-placeholder);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.reply-close {
+  background: none;
+  border: none;
+  font-size: 16px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+.reply-close:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--text-primary);
+}
+
 .message-area {
   border-top: 1px solid var(--border-color);
   background: var(--bg-color-white);

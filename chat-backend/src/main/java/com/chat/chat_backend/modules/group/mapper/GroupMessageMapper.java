@@ -31,4 +31,12 @@ public interface GroupMessageMapper extends BaseMapper<GroupMessage> {
      * @return 消息总数
      */
     Integer countHistory(@Param("groupId") Long groupId);
+
+    /**
+     * 撤回群聊消息（2分钟内，且校验发送者身份）
+     * @param messageId 待撤回的消息ID
+     * @param userId 请求撤回的用户ID
+     * @return 影响的行数（不归该用户所有或超时时返回0）
+     */
+    Integer recallGroupMessage(@Param("messageId") Long messageId, @Param("userId") Long userId);
 }

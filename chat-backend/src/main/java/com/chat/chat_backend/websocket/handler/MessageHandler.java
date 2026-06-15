@@ -29,9 +29,10 @@ public class MessageHandler {
         String content = json.getStr("content");
         Integer messageType = json.getInt("messageType", 1);
         Integer duration = json.getInt("duration");
+        Long replyToId = json.getLong("replyToId");
 
-        log.info("单聊消息: from={}, to={}, type={}", fromUserId, toUserId, messageType);
+        log.info("单聊消息: from={}, to={}, type={}, replyTo={}", fromUserId, toUserId, messageType, replyToId);
 
-        messageHandlerService.sendAndNotify(fromUserId, toUserId, content, messageType, duration);
+        messageHandlerService.sendAndNotify(fromUserId, toUserId, content, messageType, duration, replyToId);
     }
 }

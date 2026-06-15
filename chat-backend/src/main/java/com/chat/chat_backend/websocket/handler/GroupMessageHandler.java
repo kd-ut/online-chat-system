@@ -29,9 +29,10 @@ public class GroupMessageHandler {
         String content = json.getStr("content");
         Integer messageType = json.getInt("messageType", 1);
         Integer duration = json.getInt("duration");
+        Long replyToId = json.getLong("replyToId");
 
-        log.info("群聊消息: from={}, groupId={}, type={}", fromUserId, groupId, messageType);
+        log.info("群聊消息: from={}, groupId={}, type={}, replyTo={}", fromUserId, groupId, messageType, replyToId);
 
-        groupMessageHandlerService.sendAndNotify(fromUserId, groupId, content, messageType, duration);
+        groupMessageHandlerService.sendAndNotify(fromUserId, groupId, content, messageType, duration, replyToId);
     }
 }

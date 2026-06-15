@@ -14,4 +14,13 @@
         SELECT COUNT(*) FROM group_message WHERE group_id = #{groupId}
     </select>
 
+    <!-- 撤回群消息（2分钟内，校验发送者） -->
+    <update id="recallGroupMessage">
+        UPDATE group_message
+        SET recall_time = NOW()
+        WHERE id = #{messageId}
+          AND from_user_id = #{userId}
+          AND send_time > DATE_SUB(NOW(), INTERVAL 2 MINUTE)
+    </update>
+
 </mapper>

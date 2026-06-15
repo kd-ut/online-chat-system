@@ -37,4 +37,18 @@ public class MessageVO {
     private Boolean isRecalled;
     /** 发送时间 */
     private LocalDateTime sendTime;
+    /** 引用的消息ID */
+    private Long replyToId;
+    /** 被引用的消息信息 */
+    private RepliedMessageInfo repliedMessage;
+
+    @Data
+    @Builder
+    public static class RepliedMessageInfo {
+        private Long messageId;
+        private String content;
+        private String fromUserNickname;
+        /** 消息类型 */
+        private Integer messageType;
+    }
 }

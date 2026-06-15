@@ -6,9 +6,10 @@
     <GroupNoticeBar :notice="group?.notice ?? null" @click="openNotice" />
 
     <GroupMessageList ref="messageListRef" :messages="messages" :current-user-id="currentUserId" :loading="loading"
-      @load-more="loadMore" />
+      @load-more="loadMore" @reply="replyToMessage = $event" />
 
-    <GroupMessageInput :muted="isMuted" @send="sendMessage" />
+    <GroupMessageInput :muted="isMuted" :reply-to-message="replyToMessage"
+      @send="sendMessage" @cancel-reply="replyToMessage = null" />
 
     <GroupNoticeDialog v-model="showNoticeDialog" :notice="group?.notice ?? null" :can-edit="canEditNotice"
       @save="handleUpdateNotice" />
@@ -104,6 +105,8 @@ const showDisbandDialog = ref(false)
 const memberList = ref<GroupMemberVO[]>([])
 /** 好友列表（用于邀请） */
 const friendList = ref<FriendVO[]>([])
+/** 当前引用的消息（回复功能） */
+const replyToMessage = ref<any>(null)
 
 /** 加载历史消息 @param reset 是否重置页码 @returns Promise<void> */
 const loadHistory = async (reset = true) => {
@@ -151,10 +154,23 @@ const clearUnreadCount = async () => {
   }
 }
 
-/** 发送群消息 @param content 消息内容 @returns void */
-const sendMessage = (content: string) => {
+/** 发送群消息 @param content 消息内容 @param replyToId 引用消息ID @returns void */
+const sendMessage = (content: string, replyToId?: number) => {
   if (!props.group?.id) return
   if (isMuted.value) { ElMessage.warning('你已被禁言'); return }
+  // 查找被引用消息信息
+  let repliedMessage: any = undefined
+  if (replyToId) {
+    const found = messages.value.find(m => m.id === replyToId)
+    if (found) {
+      repliedMessage = {
+        messageId: replyToId,
+        content: found.isRecalled ? '' : found.content,
+        fromUserNickname: found.fromUserNickname,
+        messageType: found.messageType
+      }
+    }
+  }
   const tempMsg: GroupMessageVO = {
     id: Date.now(),
     groupId: props.group.id,
@@ -163,15 +179,36 @@ const sendMessage = (content: string) => {
     fromUserAvatar: userStore.userInfo?.avatar ?? null,
     content: content,
     messageType: 1,
-    sendTime: new Date().toISOString()
+    sendTime: new Date().toISOString(),
+    isRecalled: false,
+    replyToId,
+    repliedMessage
   }
   messages.value.push(tempMsg)
   messageListRef.value?.scrollToBottom()
-  websocketService.sendGroupMessage(props.group.id, content)
+  websocketService.sendGroupMessage(props.group.id, content, 1, replyToId)
+  replyToMessage.value = null
 }
 
 /** 接收 WebSocket 群消息 @param data 消息数据 @returns void */
 const onGroupMessage = (data: any) => {
+  // 处理发送方确认：用真实 messageId 更新本地临时消息
+  if (data.type === 'group_message_sent' && props.group && data.groupId === props.group?.id) {
+    const tempMsg = [...messages.value].reverse().find(m =>
+      m.fromUserId === currentUserId &&
+      m.content === data.content &&
+      m.messageType === data.messageType
+    )
+    if (tempMsg) {
+      tempMsg.id = data.messageId
+      tempMsg.replyToId = data.replyToId
+      if (data.repliedMessage) {
+        tempMsg.repliedMessage = data.repliedMessage
+      }
+    }
+    return
+  }
+
   if (props.group && data.groupId === props.group.id) {
     const newMsg: GroupMessageVO = {
       id: data.messageId,
@@ -181,11 +218,27 @@ const onGroupMessage = (data: any) => {
       fromUserAvatar: data.fromUserAvatar ?? null,
       content: data.content,
       messageType: data.messageType,
-      sendTime: data.sendTime
+      sendTime: data.sendTime,
+      isRecalled: false,
+      replyToId: data.replyToId,
+      repliedMessage: data.repliedMessage
     }
     messages.value.push(newMsg)
     messageListRef.value?.scrollToBottom()
     clearUnreadCount()
+  }
+}
+
+/** 接收群消息撤回通知 @param data 撤回数据 @returns void */
+const onGroupRecall = (data: any) => {
+  if (props.group && data.groupId === props.group?.id) {
+    const idx = messages.value.findIndex(m => m.id === data.messageId)
+    if (idx !== -1) {
+      messages.value[idx].isRecalled = true
+      if (messages.value[idx].repliedMessage) {
+        messages.value[idx].repliedMessage.content = ''
+      }
+    }
   }
 }
 
@@ -291,14 +344,17 @@ watch(() => props.group, (newGroup) => {
 
 /** WebSocket 群消息回调清理函数 */
 let unsubGroupMessage: (() => void) | null = null
+let unsubGroupRecall: (() => void) | null = null
 
 /** 注册 WebSocket 群消息回调 */
 onMounted(() => {
   unsubGroupMessage = websocketService.onGroupMessage(onGroupMessage)
+  unsubGroupRecall = websocketService.onGroupRecall(onGroupRecall)
 })
 
 onUnmounted(() => {
   if (unsubGroupMessage) { unsubGroupMessage(); unsubGroupMessage = null }
+  if (unsubGroupRecall) { unsubGroupRecall(); unsubGroupRecall = null }
 })
 </script>
 

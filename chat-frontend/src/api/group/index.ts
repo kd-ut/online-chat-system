@@ -39,6 +39,17 @@ export interface GroupMessageVO {
   messageType: number
   /** 发送时间 */
   sendTime: string
+  /** 是否已撤回 */
+  isRecalled?: boolean
+  /** 引用的消息ID */
+  replyToId?: number
+  /** 被引用的消息信息 */
+  repliedMessage?: {
+    messageId: number
+    content: string
+    fromUserNickname: string
+    messageType: number
+  }
 }
 
 /** 群成员视图对象 */
@@ -155,4 +166,9 @@ export const unmuteGroupMemberApi = (groupId: number, memberId: number) => {
 /** 批量禁言 @param groupId 群ID @param memberIds 成员用户ID列表 @param minutes 禁言时长（分钟） @returns 操作结果 */
 export const batchMuteGroupApi = (groupId: number, memberIds: number[], minutes: number) => {
   return request.put(`/group/${groupId}/members/batch-mute`, { memberIds, minutes })
+}
+
+/** 撤回群消息 @param messageId 消息ID @returns 操作结果 */
+export const recallGroupMessageApi = (messageId: number) => {
+  return request.put(`/group/message/recall/${messageId}`)
 }

@@ -5,7 +5,7 @@
     </div>
 
     <MessageBubble v-for="msg in messages" :key="msg.id" :message="msg" :is-own="msg.fromUserId === currentUserId"
-      :show-info="true" />
+      :show-info="true" @reply="(m) => $emit('reply', m)" />
 
     <div v-if="loading && messages.length > 0" class="loading-more">
       <el-icon class="is-loading">
@@ -31,8 +31,8 @@ const props = defineProps<{
   loading: boolean
 }>()
 
-/** 组件事件：加载更多消息 */
-const emit = defineEmits(['loadMore'])
+/** 组件事件：加载更多消息、回复消息 */
+const emit = defineEmits(['loadMore', 'reply'])
 
 /** 列表容器引用 */
 const listRef = ref<HTMLElement>()

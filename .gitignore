@@ -37,3 +37,6 @@ docker.env
 logs/
 *.log
 
+
+#其他
+else

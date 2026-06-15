@@ -28,6 +28,15 @@ export interface MessageVO {
   sendTime: string
   /** 语音时长（秒） */
   duration?: number
+  /** 引用的消息ID */
+  replyToId?: number
+  /** 被引用的消息信息 */
+  repliedMessage?: {
+    messageId: number
+    content: string
+    fromUserNickname: string
+    messageType: number
+  }
 }
 
 /** 未读消息详情 */

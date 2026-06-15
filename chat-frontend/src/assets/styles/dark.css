@@ -150,6 +150,16 @@ html.dark {
     background: #1f1a3d !important;
   }
 
+  /* 聊天输入框暗色下聚焦保持深色背景 */
+  .chat-textarea:focus {
+    background: #252525 !important;
+    color: var(--text-primary) !important;
+  }
+
+  .chat-textarea:disabled {
+    background: #2a1a1a !important;
+  }
+
   /* skeleton */
   .skeleton-shimmer {
     background: linear-gradient(90deg, #252525 25%, #2a2a2a 50%, #252525 75%);
@@ -209,5 +219,33 @@ html.dark {
   /* 移动端底部导航栏 */
   .mobile-navbar {
     background: #1a1a1a !important;
+  }
+
+  /* 群聊消息气泡暗色 */
+  .group-chat-window .message-list {
+    background: #141414 !important;
+  }
+
+  .group-chat-window .message-bubble {
+    background: #252525 !important;
+    color: var(--text-primary) !important;
+    border-color: #333333 !important;
+  }
+
+  .group-chat-window .message-bubble.recalled {
+    background: #1f1f1f !important;
+  }
+
+  .group-chat-window .replied-card {
+    background: rgba(255, 255, 255, 0.06) !important;
+  }
+
+  .group-chat-window .replied-name {
+    color: var(--color-primary) !important;
+  }
+
+  /* 群聊消息列表暗色背景 */
+  .message-list {
+    background: var(--bg-color);
   }
 }

@@ -3,11 +3,12 @@
     <ChatHeader :friend="friend" @download="showDownloadDialog = true" />
 
     <MessageList ref="messageListRef" :messages="messages" :current-user-id="currentUserId" :loading="loading"
-      @load-more="loadMore" />
+      @load-more="loadMore" @reply="replyToMessage = $event" />
 
-    <MessageInput :current-chat-user-id="friend?.userId" @send="sendMessage" @send-image="sendImage"
+    <MessageInput :current-chat-user-id="friend?.userId" :reply-to-message="replyToMessage"
+      @send="sendMessage" @send-image="sendImage"
       @send-voice="sendVoice" @send-emoji="sendEmoji" @start-voice-call="startVoiceCall"
-      @start-video-call="startVideoCall" />
+      @start-video-call="startVideoCall" @cancel-reply="replyToMessage = null" />
 
     <CallDialog v-model="voiceCallVisible" :target-user="friend" call-type="voice" :is-caller="true"
       @end-call="endVoiceCall" @call-record="onCallRecord" />
@@ -57,6 +58,8 @@ const hasMore = ref(true)
 const totalMessageCount = ref(0)
 /** 下载对话框显示状态 */
 const showDownloadDialog = ref(false)
+/** 当前引用的消息（回复功能） */
+const replyToMessage = ref<any>(null)
 
 /** 语音通话对话框可见 */
 const voiceCallVisible = ref(false)
@@ -179,8 +182,21 @@ const loadMore = () => {
   }
 }
 
-/** 添加本地消息（发送后立即显示） @param content 内容 @param messageType 消息类型 @param duration 语音时长 @returns void */
-const addLocalMessage = (content: string, messageType: number, duration?: number) => {
+/** 添加本地消息（发送后立即显示） @param content 内容 @param messageType 消息类型 @param duration 语音时长 @param replyToId 引用消息ID @returns void */
+const addLocalMessage = (content: string, messageType: number, duration?: number, replyToId?: number) => {
+  // 查找被引用消息信息
+  let repliedMessage: any = undefined
+  if (replyToId) {
+    const found = messages.value.find(m => m.id === replyToId)
+    if (found) {
+      repliedMessage = {
+        messageId: replyToId,
+        content: found.isRecalled ? '' : found.content,
+        fromUserNickname: found.fromUserNickname,
+        messageType: found.messageType
+      }
+    }
+  }
   const msg = {
     id: Date.now() + Math.random(),
     fromUserId: currentUserId,
@@ -190,18 +206,21 @@ const addLocalMessage = (content: string, messageType: number, duration?: number
     messageType,
     duration,
     sendTime: new Date().toISOString(),
-    isRecalled: false
+    isRecalled: false,
+    replyToId,
+    repliedMessage
   }
   messages.value.push(msg)
   messageStore.appendToCache(props.friend.userId, msg)
   messageListRef.value?.scrollToBottom()
 }
 
-/** 发送文本消息 @param content 文本内容 @returns void */
-const sendMessage = (content: string) => {
+/** 发送文本消息 @param content 文本内容 @param replyToId 引用消息ID @returns void */
+const sendMessage = (content: string, replyToId?: number) => {
   if (!props.friend?.userId) return
-  addLocalMessage(content, 1)
-  websocketService.sendMessage(props.friend.userId, content, 1)
+  addLocalMessage(content, 1, undefined, replyToId)
+  websocketService.sendMessage(props.friend.userId, content, 1, undefined, replyToId)
+  replyToMessage.value = null
 }
 
 /** 发送图片 @param url 图片地址 @returns void */
@@ -276,6 +295,24 @@ const markAsRead = async () => {
 
 /** 收到新消息回调 @param data 消息数据 @returns void */
 const onNewMessage = (data: any) => {
+  // 处理发送方确认：用真实 messageId 更新本地临时消息
+  if (data.type === 'message_sent' && data.toUserId === props.friend?.userId) {
+    // 找到最近一条自己发送的、内容匹配的临时消息
+    const tempMsg = [...messages.value].reverse().find(m =>
+      m.fromUserId === currentUserId &&
+      m.content === data.content &&
+      m.messageType === data.messageType
+    )
+    if (tempMsg) {
+      tempMsg.id = data.messageId
+      tempMsg.replyToId = data.replyToId
+      if (data.repliedMessage) {
+        tempMsg.repliedMessage = data.repliedMessage
+      }
+    }
+    return
+  }
+
   if (props.friend?.userId === data.fromUserId) {
     // 去重：已存在相同 messageId 则不重复添加
     if (data.messageId && messages.value.some(m => m.id === data.messageId)) return
@@ -288,12 +325,31 @@ const onNewMessage = (data: any) => {
       messageType: data.messageType || 1,
       duration: data.duration,
       sendTime: data.sendTime,
-      isRecalled: false
+      isRecalled: false,
+      replyToId: data.replyToId,
+      repliedMessage: data.repliedMessage
     }
     messages.value.push(msg)
     messageStore.appendToCache(props.friend.userId, msg)
     messageListRef.value?.scrollToBottom()
     friendStore.clearUnreadForFriend(data.fromUserId)
+  }
+}
+
+/** 收到撤回通知回调 @param data 撤回数据 @returns void */
+const onRecall = (data: any) => {
+  // 处理自己撤回对方看到的通知，或对方撤回自己看到的通知
+  if (props.friend?.userId === data.fromUserId || props.friend?.userId === data.toUserId) {
+    const idx = messages.value.findIndex(m => m.id === data.messageId)
+    if (idx !== -1) {
+      messages.value[idx].isRecalled = true
+      // 清除引用信息中的内容（显示"消息已撤回"）
+      if (messages.value[idx].repliedMessage) {
+        messages.value[idx].repliedMessage.content = ''
+      }
+      // 更新缓存
+      messageStore.invalidateCache(props.friend.userId)
+    }
   }
 }
 
@@ -323,10 +379,12 @@ watch(() => props.friend, (newFriend) => {
 /** WebSocket 回调清理函数 */
 let unsubMessage: (() => void) | null = null
 let unsubCallSignal: (() => void) | null = null
+let unsubRecall: (() => void) | null = null
 
 onMounted(() => {
   unsubMessage = websocketService.onMessage(onNewMessage)
   unsubCallSignal = websocketService.onCallSignal(onCallSignal)
+  unsubRecall = websocketService.onRecall(onRecall)
   // SFU 视频通话结束后生成聊天记录
   rtcStore.onCallRecord((data) => {
     const durationSec = data.duration || 0
@@ -337,6 +395,7 @@ onMounted(() => {
 onUnmounted(() => {
   if (unsubMessage) { unsubMessage(); unsubMessage = null }
   if (unsubCallSignal) { unsubCallSignal(); unsubCallSignal = null }
+  if (unsubRecall) { unsubRecall(); unsubRecall = null }
   if (props.friend) markAsRead()
   rtcStore.onCallRecord(null)
 })

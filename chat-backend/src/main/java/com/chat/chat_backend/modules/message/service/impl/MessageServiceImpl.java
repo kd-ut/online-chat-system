@@ -5,6 +5,7 @@ import com.chat.chat_backend.common.constant.MessageConstants;
 import com.chat.chat_backend.common.constant.RedisConstants;
 import com.chat.chat_backend.common.exception.BusinessException;
 import com.chat.chat_backend.common.result.ResultCode;
+import cn.hutool.json.JSONUtil;
 import com.chat.chat_backend.common.utils.RedisUtil;
 import com.chat.chat_backend.modules.message.mapper.MessageMapper;
 import com.chat.chat_backend.modules.notification.mapper.SystemNotificationMapper;
@@ -16,6 +17,7 @@ import com.chat.chat_backend.modules.message.dto.response.UnreadMessageDetailVO;
 import com.chat.chat_backend.modules.message.entity.Message;
 import com.chat.chat_backend.modules.user.entity.User;
 import com.chat.chat_backend.modules.message.service.MessageService;
+import com.chat.chat_backend.websocket.WebSocketSessionManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,8 @@ public class MessageServiceImpl implements MessageService {
     private final SystemNotificationMapper systemNotificationMapper;
     /** Redis缓存工具类 */
     private final RedisUtil redisUtil;
+    /** WebSocket会话管理器 */
+    private final WebSocketSessionManager sessionManager;
 
     /** 分页查询聊天记录（含语音消息时长解析） @param userId 用户ID @param friendId 好友ID @param page 页码 @param size 每页条数 @return 分页消息列表 */
     @Override
@@ -81,6 +85,30 @@ public class MessageServiceImpl implements MessageService {
                         }
                     }
 
+                    // 加载被引用消息信息
+                    MessageVO.RepliedMessageInfo repliedInfo = null;
+                    if (msg.getReplyToId() != null) {
+                        Message replied = messageMapper.selectById(msg.getReplyToId());
+                        if (replied != null) {
+                            User repliedUser = userMap.get(replied.getFromUserId());
+                            if (repliedUser == null) {
+                                repliedUser = userMapper.selectById(replied.getFromUserId());
+                                if (repliedUser != null) userMap.put(repliedUser.getId(), repliedUser);
+                            }
+                            String repliedContent = replied.getRecallTime() != null ? "" : replied.getContent();
+                            // 如果是语音消息，去除时长标记
+                            if (replied.getMessageType() == 4 && repliedContent != null && repliedContent.contains("|")) {
+                                repliedContent = repliedContent.split("\\|")[0];
+                            }
+                            repliedInfo = MessageVO.RepliedMessageInfo.builder()
+                                    .messageId(msg.getReplyToId())
+                                    .content(repliedContent)
+                                    .fromUserNickname(repliedUser != null ? repliedUser.getNickname() : "未知用户")
+                                    .messageType(replied.getMessageType())
+                                    .build();
+                        }
+                    }
+
                     return MessageVO.builder()
                             .id(msg.getId())
                             .fromUserId(msg.getFromUserId())
@@ -95,6 +123,8 @@ public class MessageServiceImpl implements MessageService {
                             .isRead(msg.getIsRead() == 1)
                             .isRecalled(msg.getRecallTime() != null)
                             .sendTime(msg.getSendTime())
+                            .replyToId(msg.getReplyToId())
+                            .repliedMessage(repliedInfo)
                             .build();
                 })
                 .collect(Collectors.toList());
@@ -219,10 +249,32 @@ public class MessageServiceImpl implements MessageService {
     /** 撤回消息（仅发送者可操作，超时后不可撤回） @param userId 用户ID @param messageId 消息ID */
     @Override
     public void recallMessage(Long userId, Long messageId) {
+        // 先查询消息获取双方用户ID（用于WebSocket通知）
+        Message msg = messageMapper.selectById(messageId);
+        if (msg == null) {
+            throw new BusinessException(ResultCode.MESSAGE_NOT_FOUND);
+        }
+
         int updated = messageMapper.recallMessage(messageId, userId);
         if (updated == 0) {
             throw new BusinessException(ResultCode.MESSAGE_RECALL_TIMEOUT);
         }
+
+        // 构建撤回通知并通过WebSocket推送
+        var recallNotification = JSONUtil.createObj()
+                .set("type", "recall")
+                .set("messageId", messageId)
+                .set("fromUserId", userId)
+                .set("toUserId", msg.getToUserId());
+
+        String notificationStr = recallNotification.toString();
+
+        // 通知发送者（多端同步）
+        sessionManager.sendMessage(msg.getFromUserId(), notificationStr);
+        // 通知接收者
+        sessionManager.sendMessage(msg.getToUserId(), notificationStr);
+
+        log.info("消息撤回成功: messageId={}, userId={}", messageId, userId);
     }
 
     /** 搜索文本消息 @param userId 用户ID @param keyword 关键词 @param limit 数量上限 @return 搜索结果 */

@@ -32,4 +32,6 @@ public class Message {
     private LocalDateTime recallTime;
     /** 发送时间 */
     private LocalDateTime sendTime;
+    /** 引用的消息ID（回复功能） */
+    private Long replyToId;
 }

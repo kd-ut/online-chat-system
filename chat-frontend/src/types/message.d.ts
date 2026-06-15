@@ -23,6 +23,15 @@ export interface MessageVO {
   isRecalled: boolean
   /** 发送时间 */
   sendTime: string
+  /** 引用的消息ID */
+  replyToId?: number
+  /** 被引用的消息信息 */
+  repliedMessage?: {
+    messageId: number
+    content: string
+    fromUserNickname: string
+    messageType: number
+  }
 }
 
 /** 发送消息参数 */
