@@ -4,6 +4,7 @@ import { ElMessage } from 'element-plus'
 import { Device } from 'mediasoup-client'
 import { io, type Socket } from 'socket.io-client'
 import { useUserStore } from '@/stores/userStore'
+import { websocketService } from '@/utils/websocket'
 
 interface RtcUser {
   id: string
@@ -61,6 +62,9 @@ export const useRtcStore = defineStore('rtc', () => {
   const consumedProducerIds = new Set<string>()
   const pendingProducerIds = new Set<string>()
   let isFlushingPendingProducers = false
+
+  const directCallTargetUserId = ref<number>(0)
+  let callStartTime = 0
 
   const isIncoming = computed(() => Boolean(pendingInvite.value && !isJoined.value))
   const remoteVideos = computed(() => remoteMedias.value.filter(media => media.kind === 'video'))
@@ -230,6 +234,8 @@ export const useRtcStore = defineStore('rtc', () => {
 
     const me = currentUserPayload()
     const targetName = targetUser.nickname || targetUser.remark || '好友'
+    directCallTargetUserId.value = Number(targetUser.userId || targetUser.id) || 0
+    callStartTime = Date.now()
     statusText.value = '正在发起视频通话...'
     visible.value = true
 
@@ -489,6 +495,7 @@ export const useRtcStore = defineStore('rtc', () => {
     } catch (error) {
       console.error(error)
     } finally {
+      sendCallRecord()
       resetMediaState()
       pendingInvite.value = null
       visible.value = false
@@ -503,12 +510,31 @@ export const useRtcStore = defineStore('rtc', () => {
     } catch (error) {
       console.error(error)
     } finally {
+      sendCallRecord()
       resetMediaState()
       pendingInvite.value = null
       visible.value = false
       roomId.value = ''
       members.value = []
     }
+  }
+
+  /** 发送视频通话记录 */
+  const sendCallRecord = () => {
+    if (!directCallTargetUserId.value) return
+    const duration = Math.floor((Date.now() - callStartTime) / 1000)
+    if (duration < 0) return
+    websocketService.sendMessage(directCallTargetUserId.value, String(duration), 6)
+    // 触发本地记录回调
+    if (callRecordCallback) {
+      callRecordCallback({ callType: 'video', duration })
+    }
+    directCallTargetUserId.value = 0
+  }
+
+  let callRecordCallback: ((data: { callType: 'video'; duration: number }) => void) | null = null
+  const onCallRecord = (cb: (data: { callType: 'video'; duration: number }) => void) => {
+    callRecordCallback = cb
   }
 
   const disconnect = () => {
@@ -548,6 +574,7 @@ export const useRtcStore = defineStore('rtc', () => {
     toggleCamera,
     leaveCall,
     endCall,
-    disconnect
+    disconnect,
+    onCallRecord
   }
 })

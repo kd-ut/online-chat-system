@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.chat.chat_backend.modules.message.dto.response.MessageVO;
 import com.chat.chat_backend.modules.message.dto.response.UnreadCountVO;
 import java.util.List;
+import java.util.Map;
 
 /** 消息服务接口，提供聊天记录查询、消息下载、标记已读、未读数统计、撤回消息等功能 @author chat-backend @since 2026-05-12 */
 public interface MessageService {
@@ -22,4 +23,7 @@ public interface MessageService {
 
     /** 撤回消息 @param userId 用户ID @param messageId 消息ID */
     void recallMessage(Long userId, Long messageId);
+
+    /** 搜索用户相关的文本消息 @param userId 用户ID @param keyword 关键词 @param limit 数量上限 @return 搜索结果列表 */
+    List<Map<String, Object>> searchMessages(Long userId, String keyword, Integer limit);
 }

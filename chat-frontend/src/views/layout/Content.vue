@@ -8,7 +8,7 @@
 </template>
 
 <script setup lang="ts">
-/** 内容区域路由分发组件 @component */
+/** 内容区域路由分发组件，根据路由名称渲染对应视图 @component */
 import ChatView from '@/views/chat/ChatView.vue'
 import ProfileView from '@/views/profile/ProfileView.vue'
 import AdminView from '@/views/admin/AdminView.vue'

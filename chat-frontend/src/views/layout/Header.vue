@@ -1,10 +1,22 @@
 <template>
   <div class="header">
     <div class="logo">
-      <span>快来聊天吧</span>
+      <!-- 移动端：hamburger 按钮 -->
+      <button class="hamburger" @click="emit('toggleSidebar')">
+        <el-icon :size="20"><Expand /></el-icon>
+      </button>
+      <span class="desktop-only">快来聊天吧</span>
     </div>
 
     <div class="actions">
+      <!-- 移动端：搜索和主题 -->
+      <button class="search-btn mobile-only" title="搜索 (Ctrl+K)" @click="openSearch">
+        <el-icon :size="18"><Search /></el-icon>
+      </button>
+      <div class="mobile-only">
+        <ThemeToggle />
+      </div>
+
       <el-badge :value="messageStore.unreadCount?.total || 0" :hidden="!messageStore.unreadCount?.total" class="bell-badge">
         <el-button circle @click="showMessageBox = true" class="bell-btn">
           <el-icon :size="20"><Bell /></el-icon>
@@ -16,7 +28,7 @@
           <el-avatar :size="36" :src="userStore.userInfo?.avatar">
             {{ userStore.userInfo?.nickname?.charAt(0) || 'U' }}
           </el-avatar>
-          <span>{{ userStore.userInfo?.nickname }}</span>
+          <span class="desktop-only">{{ userStore.userInfo?.nickname }}</span>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
@@ -38,12 +50,15 @@
 /** 主布局头部组件，显示未读角标、用户菜单和消息盒子 @component */
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Bell } from '@element-plus/icons-vue'
+import { Bell, Expand, Search } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/userStore'
 import { useMessageStore } from '@/stores/messageStore'
 import { websocketService } from '@/utils/websocket'
 import MessageBox from '@/components/message/MessageBox.vue'
 import ConfirmDialog from '@/components/common/ConfirmDialog.vue'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
+
+const emit = defineEmits<{ toggleSidebar: [] }>()
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -62,6 +77,11 @@ const handleCommand = async (command: string) => {
   } else if (command === 'admin') {
     router.push('/admin')
   }
+}
+
+/** 打开全局搜索 @returns void */
+const openSearch = () => {
+  window.dispatchEvent(new CustomEvent('open-global-search'))
 }
 
 /** 确认退出登录 @returns void */
@@ -96,7 +116,7 @@ onMounted(() => {
 <style scoped>
 .header {
   height: var(--header-height);
-  padding: 0 24px;
+  padding: 0 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -104,12 +124,42 @@ onMounted(() => {
   flex-shrink: 0;
   position: relative;
   z-index: 10;
-  border-bottom: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color-light);
+}
+
+/* 桌面端隐藏，移动端显示 */
+.mobile-only { display: none; }
+.desktop-only { display: inline; }
+
+@media (max-width: 768px) {
+  .mobile-only { display: flex; }
+  .desktop-only { display: none; }
+  .header { padding: 0 12px; }
 }
 .logo {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+.hamburger {
+  display: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--text-regular);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.hamburger:hover {
+  background: var(--bg-color);
+  color: var(--color-primary);
+}
+@media (max-width: 768px) {
+  .hamburger { display: flex; }
 }
 .logo span {
   font-size: 18px;
@@ -129,6 +179,27 @@ onMounted(() => {
 
 .bell-badge :deep(.el-badge__content) {
   border: 2px solid var(--bg-color-white) !important;
+}
+
+.search-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--border-radius-small);
+  background: var(--bg-color);
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-regular);
+  transition: all 0.2s;
+  flex-shrink: 0;
+  font-size: 16px;
+}
+
+.search-btn:hover {
+  background: var(--color-primary-light-1);
+  color: var(--color-primary);
 }
 
 .bell-btn {

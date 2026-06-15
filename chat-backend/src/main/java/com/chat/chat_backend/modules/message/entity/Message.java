@@ -20,7 +20,7 @@ public class Message {
     private Long fromUserId;
     /** 接收方用户ID */
     private Long toUserId;
-    /** 消息类型：1-文字，2-图片，3-文件 */
+    /** 消息类型：1-文字，2-图片，3-文件，4-语音，5-语音通话，6-视频通话 */
     private Integer messageType;
     /** 消息内容 */
     private String content;
@@ -32,4 +32,6 @@ public class Message {
     private LocalDateTime recallTime;
     /** 发送时间 */
     private LocalDateTime sendTime;
+    /** 引用的消息ID（回复功能） */
+    private Long replyToId;
 }

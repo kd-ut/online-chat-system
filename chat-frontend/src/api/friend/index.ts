@@ -25,10 +25,26 @@ export interface FriendVO {
 
 /** 好友分组视图对象 */
 export interface FriendGroupVO {
+  /** 分组ID（默认分组为null） */
+  groupId: number | null
   /** 分组名称 */
   groupName: string
   /** 该分组下的好友列表 */
   friends: FriendVO[]
+}
+
+/** 好友分组实体 */
+export interface FriendGroup {
+  /** 分组ID */
+  id: number
+  /** 用户ID */
+  userId: number
+  /** 分组名称 */
+  groupName: string
+  /** 排序序号 */
+  sortOrder: number
+  /** 创建时间 */
+  createdAt: string
 }
 
 /** 好友申请视图对象 */
@@ -103,4 +119,26 @@ export const moveFriendGroupApi = (friendId: number, groupName: string) => {
 /** 更新好友备注 @param friendId 好友关系ID @param remark 新备注 @returns 操作结果 */
 export const updateFriendRemarkApi = (friendId: number, remark: string) => {
   return request.put(`/friend/${friendId}/remark`, null, { params: { remark } })
+}
+
+// ===== 分组管理 =====
+
+/** 获取分组列表 @returns 分组列表 */
+export const getFriendGroupListApi = () => {
+  return request.get<any, FriendGroup[]>('/friend/groups')
+}
+
+/** 创建分组 @param groupName 分组名称 @returns 新分组 */
+export const createFriendGroupApi = (groupName: string) => {
+  return request.post<any, FriendGroup>('/friend/groups', { groupName })
+}
+
+/** 重命名分组 @param groupId 分组ID @param groupName 新名称 @returns 操作结果 */
+export const renameFriendGroupApi = (groupId: number, groupName: string) => {
+  return request.put(`/friend/groups/${groupId}`, { groupName })
+}
+
+/** 删除分组 @param groupId 分组ID @returns 操作结果 */
+export const deleteFriendGroupApi = (groupId: number) => {
+  return request.delete(`/friend/groups/${groupId}`)
 }

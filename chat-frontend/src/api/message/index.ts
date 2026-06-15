@@ -16,7 +16,7 @@ export interface MessageVO {
   toUserId: number
   /** 接收者昵称 */
   toUserNickname: string
-  /** 消息类型：1-文本 2-图片 3-文件 4-语音 */
+  /** 消息类型：1-文本 2-图片 3-文件 4-语音 5-语音通话 6-视频通话 */
   messageType: number
   /** 消息内容 */
   content: string
@@ -28,6 +28,15 @@ export interface MessageVO {
   sendTime: string
   /** 语音时长（秒） */
   duration?: number
+  /** 引用的消息ID */
+  replyToId?: number
+  /** 被引用的消息信息 */
+  repliedMessage?: {
+    messageId: number
+    content: string
+    fromUserNickname: string
+    messageType: number
+  }
 }
 
 /** 未读消息详情 */
@@ -124,16 +133,30 @@ export const recallMessageApi = (messageId: number) => {
 export const uploadImageApi = (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
-  return request.post<any, string>('/message/upload/image', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
+  return request.post<any, string>('/message/upload/image', formData)
 }
 
 /** 上传语音 @param file 语音文件 @returns 语音文件URL */
 export const uploadVoiceApi = (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
-  return request.post<any, string>('/message/upload/voice', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  })
+  return request.post<any, string>('/message/upload/voice', formData)
+}
+
+/** 消息搜索结果 */
+export interface MessageSearchResult {
+  messageId: number
+  content: string
+  messageType: number
+  sendTime: string
+  fromUserId: number
+  toUserId: number
+  otherUserId: number
+  otherNickname: string
+  otherAvatar: string | null
+}
+
+/** 搜索文本消息 @param keyword 关键词 @param limit 数量上限 @returns 消息搜索结果列表 */
+export const searchMessagesApi = (keyword: string, limit: number = 20) => {
+  return request.get<any, MessageSearchResult[]>('/message/search', { params: { keyword, limit } })
 }

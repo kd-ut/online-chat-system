@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 
 /**
  * 私聊消息处理与投递服务
- * 持久化消息，如果接收方在线则通过WebSocket推送
+ * 持久化消息，推送给收发双方
  * @author chat-backend
  * @since 2026-05-12
  */
@@ -32,15 +32,9 @@ public class MessageHandlerService {
     private final WebSocketSessionManager sessionManager;
 
     /**
-     * 保存消息到数据库，如果接收方在线则通过WebSocket推送
-     * 语音消息时长会格式化到内容中
-     * @param fromUserId 发送方用户ID
-     * @param toUserId 接收方用户ID
-     * @param content 消息内容
-     * @param messageType 消息类型（1=文本，2=图片，3=文件，4=语音）
-     * @param duration 语音消息时长（秒，可选）
+     * 保存消息到数据库，推送给接收方和发送方
      */
-    public void sendAndNotify(Long fromUserId, Long toUserId, String content, Integer messageType, Integer duration) {
+    public void sendAndNotify(Long fromUserId, Long toUserId, String content, Integer messageType, Integer duration, Long replyToId) {
         // 持久化私聊消息
         Message msg = new Message();
         msg.setFromUserId(fromUserId);
@@ -49,13 +43,32 @@ public class MessageHandlerService {
         msg.setContent(formatContent(content, messageType, duration));
         msg.setIsRead(0);
         msg.setSendTime(LocalDateTime.now());
+        msg.setReplyToId(replyToId);
         messageMapper.insert(msg);
 
         // 获取发送者显示名称
         User fromUser = userMapper.selectById(fromUserId);
         String fromUserNickname = fromUser != null ? fromUser.getNickname() : "未知用户";
 
-        // 构建响应消息
+        // 预先构建被引用消息信息（供接收方和发送方共用）
+        Object repliedInfoObj = null;
+        if (replyToId != null) {
+            Message repliedMsg = messageMapper.selectById(replyToId);
+            if (repliedMsg != null) {
+                User repliedUser = userMapper.selectById(repliedMsg.getFromUserId());
+                String repliedContent = repliedMsg.getRecallTime() != null ? "" : repliedMsg.getContent();
+                if (repliedMsg.getMessageType() == 4 && repliedContent != null && repliedContent.contains("|")) {
+                    repliedContent = repliedContent.split("\\|")[0];
+                }
+                repliedInfoObj = JSONUtil.createObj()
+                        .set("messageId", replyToId)
+                        .set("content", repliedContent)
+                        .set("fromUserNickname", repliedUser != null ? repliedUser.getNickname() : "未知用户")
+                        .set("messageType", repliedMsg.getMessageType());
+            }
+        }
+
+        // 构建推送给接收方的消息
         var response = JSONUtil.createObj()
                 .set("type", "message")
                 .set("messageId", msg.getId())
@@ -65,22 +78,37 @@ public class MessageHandlerService {
                 .set("messageType", messageType)
                 .set("sendTime", msg.getSendTime().toString());
 
-        // 语音消息附加时长字段
         if (messageType == 4 && duration != null && duration > 0) {
             response.set("duration", duration);
+        }
+        if (replyToId != null) {
+            response.set("replyToId", replyToId);
+        }
+        if (repliedInfoObj != null) {
+            response.set("repliedMessage", repliedInfoObj);
         }
 
         // 推送给接收方
         sessionManager.sendMessage(toUserId, response.toString());
+
+        // 构建推送给发送方的确认消息（含真实 messageId，用于前端更新临时 ID）
+        var senderResponse = JSONUtil.createObj()
+                .set("type", "message_sent")
+                .set("messageId", msg.getId())
+                .set("toUserId", toUserId)
+                .set("content", content)
+                .set("messageType", messageType)
+                .set("sendTime", msg.getSendTime().toString())
+                .set("replyToId", replyToId);
+
+        if (repliedInfoObj != null) {
+            senderResponse.set("repliedMessage", repliedInfoObj);
+        }
+
+        // 推送给发送方
+        sessionManager.sendMessage(fromUserId, senderResponse.toString());
     }
 
-    /**
-     * 格式化消息内容，语音消息追加时长到内容末尾
-     * @param content 消息内容
-     * @param messageType 消息类型
-     * @param duration 语音时长（秒）
-     * @return 格式化后的内容（语音消息追加"|时长"后缀）
-     */
     private String formatContent(String content, Integer messageType, Integer duration) {
         if (messageType == 4 && duration != null && duration > 0) {
             return content + "|" + duration;

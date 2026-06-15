@@ -1,13 +1,20 @@
 <template>
   <div class="sidebar-tabs">
-    <div v-for="tab in visibleTabs" :key="tab.key" class="tab-item" :class="{ active: activeTab === tab.key }"
+    <div class="tabs-track">
+      <div
+        class="tab-indicator"
+        :style="{ left: indicatorLeft + 'px', width: indicatorWidth + 'px' }"
+      />
+    </div>
+    <div v-for="tab in visibleTabs" :key="tab.key" :ref="el => setTabRef(tab.key, el)"
+      class="tab-item" :class="{ active: activeTab === tab.key }"
       @click="handleTabClick(tab)">
       <el-icon>
         <component :is="tab.icon" />
       </el-icon>
       <span>{{ tab.label }}</span>
       <span v-if="tab.badge && badgeCount > 0" class="badge">
-        {{ badgeCount }}
+        {{ badgeCount > 99 ? '99+' : badgeCount }}
       </span>
       <span v-if="tab.key === 'friends' && friendUnreadCount > 0" class="friend-badge">
         {{ friendUnreadCount > 99 ? '99+' : friendUnreadCount }}
@@ -17,11 +24,10 @@
 </template>
 
 <script setup lang="ts">
-/** 侧边栏选项卡导航组件 @component */
-import { computed } from 'vue'
+/** 侧边栏选项卡导航组件 — 带滑动指示器 @component */
+import { computed, ref, watch, onMounted, nextTick } from 'vue'
 import { User, ChatDotRound, Message, Star, Setting } from '@element-plus/icons-vue'
 
-/** 组件属性：当前激活 Tab、角标数量、好友未读计数、是否为管理员 */
 const props = defineProps<{
   activeTab: string
   badgeCount: number
@@ -29,13 +35,11 @@ const props = defineProps<{
   isAdmin: boolean
 }>()
 
-/** 组件事件：切换 Tab、跳转管理后台 */
 const emit = defineEmits<{
   'update:activeTab': [tab: string]
   'goToAdmin': []
 }>()
 
-/** 所有 Tab 定义 */
 const allTabs = [
   { key: 'friends', label: '好友', icon: User, badge: false, requireAdmin: false },
   { key: 'groups', label: '群聊', icon: ChatDotRound, badge: false, requireAdmin: false },
@@ -44,7 +48,6 @@ const allTabs = [
   { key: 'admin', label: '管理', icon: Setting, badge: false, requireAdmin: true }
 ]
 
-/** 根据管理员权限过滤可见 Tab @returns 可见 Tab 列表 */
 const visibleTabs = computed(() => {
   return allTabs.filter(tab => {
     if (tab.requireAdmin && !props.isAdmin) return false
@@ -52,7 +55,40 @@ const visibleTabs = computed(() => {
   })
 })
 
-/** Tab 点击处理 @param tab 点击的 Tab 对象 @returns void */
+/** 指示器位置和宽度 */
+const indicatorLeft = ref(0)
+const indicatorWidth = ref(0)
+
+/** Tab 元素引用映射 */
+const tabRefs = ref<Record<string, HTMLElement | null>>({})
+
+function setTabRef(key: string, el: any) {
+  if (el) {
+    tabRefs.value[key] = el.$el || el as HTMLElement
+  }
+}
+
+/** 更新滑动指示器位置 */
+function updateIndicator() {
+  const el = tabRefs.value[props.activeTab]
+  if (el) {
+    indicatorLeft.value = el.offsetLeft
+    indicatorWidth.value = el.offsetWidth
+  }
+}
+
+watch(() => props.activeTab, () => {
+  nextTick(() => updateIndicator())
+})
+
+watch(visibleTabs, () => {
+  nextTick(() => updateIndicator())
+})
+
+onMounted(() => {
+  nextTick(() => updateIndicator())
+})
+
 const handleTabClick = (tab: any) => {
   if (tab.key === 'admin') {
     emit('goToAdmin')
@@ -65,14 +101,32 @@ const handleTabClick = (tab: any) => {
 <style scoped>
 .sidebar-tabs {
   display: flex;
-  padding: 8px 12px;
-  gap: 4px;
+  flex-direction: column;
+  padding: 6px 10px;
   background: var(--bg-color-white);
   border-bottom: 1px solid var(--border-color);
+  position: relative;
+}
+
+.tabs-track {
+  position: absolute;
+  bottom: 0;
+  left: 10px;
+  right: 10px;
+  height: 2px;
+}
+
+.tab-indicator {
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: 1px;
+  transition: left 0.25s var(--transition-timing-bounce), width 0.25s var(--transition-timing-bounce);
 }
 
 .tab-item {
-  flex: 1;
+  flex: none;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,7 +136,7 @@ const handleTabClick = (tab: any) => {
   position: relative;
   font-size: 13px;
   color: var(--text-regular);
-  transition: all 0.15s ease;
+  transition: all 0.2s var(--transition-timing);
   border-radius: 8px;
   background: transparent;
   border: none;
@@ -90,44 +144,28 @@ const handleTabClick = (tab: any) => {
 
 .tab-item:hover {
   color: var(--color-primary);
-  background: #f5f6ff;
+  background: var(--color-primary-light-1);
 }
 
 .tab-item:active { transform: scale(0.96); }
 
 .tab-item.active {
   color: var(--color-primary);
-  background: #eef0ff;
   font-weight: 600;
 }
 
 .tab-item .el-icon {
   font-size: 18px;
-  transition: transform 0.15s ease;
+  transition: transform 0.2s var(--transition-timing);
 }
 
 .tab-item:hover .el-icon { transform: scale(1.1); }
 
-.badge {
-  position: absolute;
-  top: 0;
-  right: 4px;
-  background: var(--color-danger);
-  color: white;
-  font-size: 10px;
-  padding: 0 5px;
-  border-radius: 8px;
-  min-width: 16px;
-  height: 16px;
-  line-height: 16px;
-  text-align: center;
-  font-weight: 600;
-}
-
+.badge,
 .friend-badge {
   position: absolute;
-  top: 0;
-  right: 4px;
+  top: 2px;
+  right: 2px;
   min-width: 16px;
   height: 16px;
   padding: 0 5px;
@@ -140,5 +178,6 @@ const handleTabClick = (tab: any) => {
   align-items: center;
   justify-content: center;
   line-height: 1;
+  animation: bounceIn 0.4s var(--transition-timing-bounce);
 }
 </style>

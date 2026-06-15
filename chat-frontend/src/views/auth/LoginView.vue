@@ -1,209 +1,363 @@
 <template>
-  <div class="login-container">
-    <AnimatedBackground />
-    <div class="login-card">
-      <h1 class="title">在线聊天系统</h1>
-      <p class="subtitle">欢迎回来，开始畅聊吧~</p>
-
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="0">
-        <el-form-item prop="username">
-          <el-input v-model="form.username" placeholder="请输入用户名" :prefix-icon="User" size="large" />
-        </el-form-item>
-
-        <el-form-item prop="password">
-          <el-input v-model="form.password" type="password" placeholder="请输入密码" :prefix-icon="Lock" size="large"
-            show-password />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button type="primary" size="large" :loading="loading" @click="handleLogin" style="width: 100%">
-            登录
-          </el-button>
-        </el-form-item>
-
-        <div class="register-link">
-          <span>还没有账号？</span>
-          <el-link type="primary" @click="goToRegister">立即注册</el-link>
+  <div class="login-page">
+    <!-- 左侧品牌区 -->
+    <div class="login-left">
+      <div class="left-content">
+        <div class="brand">
+          <h2>闪聊 FlashChat</h2>
+          <p class="brand-desc">安全 · 快速 · 实时沟通</p>
         </div>
-      </el-form>
+
+        <div class="features">
+          <div class="feature-item">
+            <div class="feature-icon"><el-icon><ChatDotRound /></el-icon></div>
+            <div class="feature-text">
+              <strong>即时消息</strong>
+              <span>文字、图片、语音、表情，多种方式畅快交流</span>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><el-icon><UserFilled /></el-icon></div>
+            <div class="feature-text">
+              <strong>群组聊天</strong>
+              <span>创建群聊，多人协作沟通更高效</span>
+            </div>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon"><el-icon><PhoneFilled /></el-icon></div>
+            <div class="feature-text">
+              <strong>语音视频通话</strong>
+              <span>端到端加密，清晰流畅的实时通话体验</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 几何装饰 -->
+        <div class="geo-deco">
+          <div class="geo geo-1" />
+          <div class="geo geo-2" />
+          <div class="geo geo-3" />
+          <div class="geo-dot dot-1" />
+          <div class="geo-dot dot-2" />
+          <div class="geo-dot dot-3" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 右侧表单区 -->
+    <div class="login-right">
+      <div class="form-wrapper">
+        <div class="form-header">
+          <h3>欢迎回来</h3>
+          <p>登录你的账号，开始畅聊吧</p>
+        </div>
+
+        <el-form :model="form" :rules="rules" ref="formRef" label-width="0" size="large"
+          @keyup.enter="handleLogin">
+          <el-form-item prop="username">
+            <el-input v-model="form.username" placeholder="用户名" :prefix-icon="User" v-ripple />
+          </el-form-item>
+
+          <el-form-item prop="password">
+            <el-input v-model="form.password" type="password" placeholder="密码"
+              :prefix-icon="Lock" show-password v-ripple />
+          </el-form-item>
+
+          <el-form-item>
+            <el-button type="primary" size="large" :loading="loading"
+              @click="handleLogin" class="login-btn" v-ripple>
+              登 录
+            </el-button>
+          </el-form-item>
+
+          <div class="form-footer">
+            <span>还没有账号？</span>
+            <el-link type="primary" @click="goToRegister">立即注册</el-link>
+          </div>
+        </el-form>
+      </div>
+
+      <div class="theme-switch-wrap">
+        <ThemeToggle />
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-/** 登录页面组件 @component */
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
+import { User, Lock, ChatDotRound, UserFilled, PhoneFilled } from '@element-plus/icons-vue'
 import { loginApi } from '@/api/user'
 import { useUserStore } from '@/stores/userStore'
-import AnimatedBackground from '@/components/common/AnimatedBackground.vue'
+import ThemeToggle from '@/components/common/ThemeToggle.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
-/** 表单引用 */
 const formRef = ref()
-/** 登录按钮加载状态 */
 const loading = ref(false)
 
-/** 登录表单数据 */
-const form = reactive({
-  username: '',
-  password: ''
-})
+const form = reactive({ username: '', password: '' })
 
-/** 表单校验规则 */
 const rules = {
   username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
   password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
 }
 
-/** 执行登录 @returns Promise<void> */
 const handleLogin = async () => {
   const valid = await formRef.value?.validate()
   if (!valid) return
-
   loading.value = true
   try {
     const res = await loginApi(form)
-    console.log('登录响应:', res)
-
     userStore.setToken(res.token)
     userStore.setUserInfo(res.user)
     ElMessage.success('登录成功')
-
     await router.push('/')
   } catch (error: any) {
-    console.error('登录失败:', error)
     ElMessage.error(error?.message || '登录失败')
   } finally {
     loading.value = false
   }
 }
 
-/** 跳转到注册页 @returns void */
-const goToRegister = () => {
-  router.push('/register')
-}
+const goToRegister = () => router.push('/register')
 </script>
 
 <style scoped>
-.login-container {
+.login-page {
   display: flex;
-  justify-content: center;
-  align-items: center;
   height: 100vh;
-  position: relative;
   overflow: hidden;
 }
 
-.login-card {
-  width: 440px;
-  background-color: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  padding: 48px 40px;
-  border-radius: 24px;
-  position: relative;
-  z-index: 1;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: cardIn 0.6s ease;
-  overflow: hidden;
-}
-
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(30px) scale(0.95); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.title {
-  font-size: 26px;
-  color: var(--color-primary);
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  position: relative;
+/* ===== 左侧品牌区 ===== */
+.login-left {
+  width: 42%;
+  background: linear-gradient(160deg, #4a3fd8 0%, #6c5ce7 40%, #8b74f0 100%);
   display: flex;
   align-items: center;
-  padding-left: 34px;
-  margin-bottom: 4px;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.title::before, .title::after {
+.left-content {
+  position: relative;
+  z-index: 2;
+  color: white;
+  padding: 60px;
+  max-width: 460px;
+}
+
+.brand {
+  margin-bottom: 40px;
+}
+
+.brand h2 {
+  margin: 0 0 8px;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.brand-desc {
+  margin: 0;
+  font-size: 14px;
+  opacity: 0.7;
+  letter-spacing: 2px;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.feature-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.feature-text strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.feature-text span {
+  font-size: 12px;
+  opacity: 0.7;
+  line-height: 1.5;
+}
+
+/* 几何装饰 */
+.geo-deco {
   position: absolute;
-  content: "";
+  inset: 0;
+  pointer-events: none;
+}
+
+.geo {
+  position: absolute;
   border-radius: 50%;
-  left: 0;
-  background-color: var(--color-primary);
 }
 
-.title::before {
-  width: 20px;
-  height: 20px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+.geo-1 {
+  width: 300px; height: 300px;
+  background: rgba(255,255,255,0.03);
+  top: -80px; right: -80px;
+  animation: geoFloat 12s ease-in-out infinite;
 }
 
-.title::after {
-  width: 20px;
-  height: 20px;
-  animation: pulse 2s ease-in-out infinite;
-  background: var(--color-primary-light);
-  opacity: 0.4;
+.geo-2 {
+  width: 200px; height: 200px;
+  border: 2px solid rgba(255,255,255,0.08);
+  bottom: 10%; left: -40px;
+  animation: geoFloat 10s ease-in-out infinite reverse;
 }
 
-@keyframes pulse {
-  0% { transform: scale(0.8); opacity: 0.5; }
-  50% { transform: scale(1.6); opacity: 0; }
-  100% { transform: scale(0.8); opacity: 0; }
+.geo-3 {
+  width: 140px; height: 140px;
+  background: rgba(255,255,255,0.04);
+  bottom: 30%; right: 15%;
+  animation: geoFloat 14s ease-in-out infinite 3s;
 }
 
-.subtitle {
+@keyframes geoFloat {
+  0%, 100% { transform: translate(0, 0); }
+  33% { transform: translate(20px, -15px); }
+  66% { transform: translate(-10px, 10px); }
+}
+
+.geo-dot {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  animation: dotPulse 3s ease-in-out infinite;
+}
+
+.dot-1 { top: 20%; right: 20%; }
+.dot-2 { bottom: 35%; left: 15%; animation-delay: 1s; }
+.dot-3 { top: 55%; right: 30%; animation-delay: 2s; }
+
+@keyframes dotPulse {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.5); }
+}
+
+/* ===== 右侧表单区 ===== */
+.login-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-color);
+  position: relative;
+}
+
+.form-wrapper {
+  width: 400px;
+  animation: formSlideIn 0.5s ease;
+}
+
+@keyframes formSlideIn {
+  from { opacity: 0; transform: translateX(20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.form-header {
+  margin-bottom: 32px;
+}
+
+.form-header h3 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.form-header p {
+  margin: 0;
   font-size: 14px;
   color: var(--text-secondary);
-  margin-bottom: 32px;
-  padding-left: 34px;
 }
 
-.login-card :deep(.el-form-item) {
+.form-wrapper :deep(.el-form-item) {
   margin-bottom: 22px;
 }
 
-.login-card :deep(.el-button--primary) {
-  border: none;
-  outline: none;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  padding: 14px;
-  border-radius: 14px;
-  color: #fff;
-  font-size: 16px;
-  width: 100%;
-  height: auto;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-.login-card :deep(.el-button--primary:hover) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(108, 92, 231, 0.3);
-}
-
-.login-card :deep(.el-input__wrapper) {
-  border-radius: 14px;
+.form-wrapper :deep(.el-input__wrapper) {
+  border-radius: 12px;
   box-shadow: 0 0 0 1px var(--border-color) inset;
-  padding: 4px 12px;
-}
-.login-card :deep(.el-input__wrapper.is-focus) {
-  box-shadow: 0 0 0 2px var(--color-primary-light) inset;
-}
-.login-card :deep(.el-input__prefix) {
-  margin-right: 8px;
-}
-.login-card :deep(.el-input__prefix-inner) {
-  color: var(--text-secondary);
+  padding: 6px 14px;
+  transition: all 0.2s;
 }
 
-.register-link {
+.form-wrapper :deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px var(--color-primary-light-5) inset;
+}
+
+.form-wrapper :deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 2px var(--color-primary-light-5) inset !important;
+}
+
+.login-btn {
+  width: 100%;
+  height: 46px;
+  border-radius: 12px !important;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  letter-spacing: 2px !important;
+}
+
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(108, 92, 231, 0.3) !important;
+}
+
+.form-footer {
   text-align: center;
   margin-top: 20px;
   font-size: 14px;
   color: var(--text-regular);
+}
+
+.theme-switch-wrap {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+}
+
+/* ===== 响应式 ===== */
+@media (max-width: 768px) {
+  .login-left {
+    display: none;
+  }
+  .form-wrapper {
+    width: 90%;
+    max-width: 400px;
+  }
 }
 </style>

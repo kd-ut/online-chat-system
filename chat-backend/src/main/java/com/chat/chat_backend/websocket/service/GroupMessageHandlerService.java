@@ -49,7 +49,7 @@ public class GroupMessageHandlerService {
      * @param messageType 消息类型（1=文本，2=图片等）
      * @param duration 语音消息时长（可选）
      */
-    public void sendAndNotify(Long fromUserId, Long groupId, String content, Integer messageType, Integer duration) {
+    public void sendAndNotify(Long fromUserId, Long groupId, String content, Integer messageType, Integer duration, Long replyToId) {
         // 验证发送者是否群成员
         List<GroupMember> members = groupMemberMapper.findByGroupId(groupId);
         boolean isMember = members.stream().anyMatch(m -> m.getUserId().equals(fromUserId));
@@ -71,6 +71,7 @@ public class GroupMessageHandlerService {
         msg.setMessageType(messageType);
         msg.setContent(content);
         msg.setSendTime(LocalDateTime.now());
+        msg.setReplyToId(replyToId);
         groupMessageMapper.insert(msg);
 
         // 增加群内其他成员的未读计数
@@ -92,6 +93,22 @@ public class GroupMessageHandlerService {
                 .set("duration", duration)
                 .set("sendTime", msg.getSendTime().toString());
 
+        // 加载被引用消息信息
+        if (replyToId != null) {
+            GroupMessage repliedMsg = groupMessageMapper.selectById(replyToId);
+            if (repliedMsg != null) {
+                User repliedUser = userMapper.selectById(repliedMsg.getFromUserId());
+                String repliedContent = repliedMsg.getRecallTime() != null ? "" : repliedMsg.getContent();
+                response.set("replyToId", replyToId);
+                var repliedInfo = JSONUtil.createObj()
+                        .set("messageId", replyToId)
+                        .set("content", repliedContent)
+                        .set("fromUserNickname", repliedUser != null ? repliedUser.getNickname() : "未知用户")
+                        .set("messageType", repliedMsg.getMessageType());
+                response.set("repliedMessage", repliedInfo);
+            }
+        }
+
         String responseStr = response.toString();
 
         // 推送给除发送者外的所有在线群成员
@@ -100,5 +117,21 @@ public class GroupMessageHandlerService {
                 sessionManager.sendMessage(member.getUserId(), responseStr);
             }
         }
+
+        // 推送给发送方确认消息（含真实 messageId，用于前端更新临时 ID）
+        var senderResponse = JSONUtil.createObj()
+                .set("type", "group_message_sent")
+                .set("messageId", msg.getId())
+                .set("groupId", groupId)
+                .set("content", content)
+                .set("messageType", messageType)
+                .set("sendTime", msg.getSendTime().toString())
+                .set("replyToId", replyToId);
+
+        if (replyToId != null && response.get("repliedMessage") != null) {
+            senderResponse.set("repliedMessage", response.get("repliedMessage"));
+        }
+
+        sessionManager.sendMessage(fromUserId, senderResponse.toString());
     }
 }

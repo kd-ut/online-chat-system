@@ -5,12 +5,14 @@ import com.chat.chat_backend.common.constant.RedisConstants;
 import com.chat.chat_backend.common.exception.BusinessException;
 import com.chat.chat_backend.common.result.ResultCode;
 import com.chat.chat_backend.common.utils.RedisUtil;
+import com.chat.chat_backend.modules.friend.mapper.FriendGroupMapper;
 import com.chat.chat_backend.modules.friend.mapper.FriendMapper;
 import com.chat.chat_backend.modules.user.mapper.UserMapper;
 import com.chat.chat_backend.modules.friend.dto.request.MoveFriendGroupRequest;
 import com.chat.chat_backend.modules.friend.dto.response.FriendGroupVO;
 import com.chat.chat_backend.modules.friend.dto.response.FriendVO;
 import com.chat.chat_backend.modules.friend.entity.Friend;
+import com.chat.chat_backend.modules.friend.entity.FriendGroup;
 import com.chat.chat_backend.modules.user.entity.User;
 import com.chat.chat_backend.modules.friend.service.FriendRelationService;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +31,8 @@ public class FriendRelationServiceImpl implements FriendRelationService {
 
     /** 好友数据访问层 */
     private final FriendMapper friendMapper;
+    /** 好友分组数据访问层 */
+    private final FriendGroupMapper friendGroupMapper;
     /** 用户数据访问层 */
     private final UserMapper userMapper;
     /** Redis缓存工具类 */
@@ -68,27 +72,51 @@ public class FriendRelationServiceImpl implements FriendRelationService {
     public List<FriendGroupVO> getFriendList(Long currentUserId) {
         if (currentUserId == null) return new ArrayList<>();
 
+        // 获取用户的所有自定义分组
+        List<FriendGroup> groups = friendGroupMapper.findByUserId(currentUserId);
+        Map<String, Long> groupNameToId = new LinkedHashMap<>();
+        // 默认分组排在最前面
+        groupNameToId.put("", null);
+        for (FriendGroup g : groups) {
+            groupNameToId.put(g.getGroupName(), g.getId());
+        }
+
+        // 获取所有好友
         List<Friend> friends = friendMapper.findAllByUserId(currentUserId);
-        if (friends.isEmpty()) return new ArrayList<>();
 
-        List<Long> friendIds = friends.stream()
-                .map(Friend::getFriendId)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-        if (friendIds.isEmpty()) return new ArrayList<>();
+        // 批量查用户信息
+        Map<Long, User> userMap = Collections.emptyMap();
+        Map<Object, Object> unreadMap = Collections.emptyMap();
+        if (!friends.isEmpty()) {
+            List<Long> friendIds = friends.stream()
+                    .map(Friend::getFriendId)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            if (!friendIds.isEmpty()) {
+                userMap = userMapper.selectBatchIds(friendIds).stream()
+                        .collect(Collectors.toMap(User::getId, u -> u));
+            }
+            String unreadKey = RedisConstants.UNREAD_COUNT + currentUserId;
+            unreadMap = redisTemplate.opsForHash().entries(unreadKey);
+        }
 
-        Map<Long, User> userMap = userMapper.selectBatchIds(friendIds).stream()
-                .collect(Collectors.toMap(User::getId, u -> u));
-
-        String unreadKey = RedisConstants.UNREAD_COUNT + currentUserId;
-        Map<Object, Object> unreadMap = redisTemplate.opsForHash().entries(unreadKey);
-        Map<String, List<FriendVO>> groupMap = new HashMap<>();
+        // 按 group_name 分组好友
+        Map<String, List<FriendVO>> groupMap = new LinkedHashMap<>();
+        for (String gn : groupNameToId.keySet()) {
+            groupMap.put(gn, new ArrayList<>());
+        }
+        // 额外处理旧数据 "我的好友" → 归入默认分组
+        groupMap.putIfAbsent("我的好友", new ArrayList<>());
 
         for (Friend friend : friends) {
             User friendUser = userMap.get(friend.getFriendId());
             if (friendUser == null) continue;
 
-            String groupName = friend.getGroupName() != null ? friend.getGroupName() : "我的好友";
+            String groupName = friend.getGroupName();
+            if (groupName == null || groupName.isEmpty() || "我的好友".equals(groupName)) {
+                groupName = "";
+            }
+
             Integer unreadCount = 0;
             Object value = unreadMap.get(String.valueOf(friend.getFriendId()));
             if (value != null) unreadCount = Integer.parseInt(value.toString());
@@ -108,12 +136,30 @@ public class FriendRelationServiceImpl implements FriendRelationService {
             groupMap.computeIfAbsent(groupName, k -> new ArrayList<>()).add(vo);
         }
 
-        return groupMap.entrySet().stream()
-                .map(entry -> FriendGroupVO.builder()
-                        .groupName(entry.getKey())
-                        .friends(entry.getValue())
-                        .build())
-                .collect(Collectors.toList());
+        // 构建结果（按 groupNameToId 的顺序）
+        List<FriendGroupVO> result = new ArrayList<>();
+        for (Map.Entry<String, Long> entry : groupNameToId.entrySet()) {
+            String gn = entry.getKey();
+            List<FriendVO> fList = groupMap.getOrDefault(gn, new ArrayList<>());
+            // 默认分组始终显示
+            result.add(FriendGroupVO.builder()
+                    .groupId(entry.getValue())
+                    .groupName(gn.isEmpty() ? " " : gn)
+                    .friends(fList)
+                    .build());
+        }
+
+        // 处理遗留的"我的好友"分组（如果有好友未被上述分组覆盖）
+        List<FriendVO> legacyFriends = groupMap.get("我的好友");
+        if (legacyFriends != null && !legacyFriends.isEmpty()) {
+            // 合并到默认分组
+            FriendGroupVO defaultGroup = result.get(0);
+            if (defaultGroup != null && defaultGroup.getGroupName().equals("默认")) {
+                defaultGroup.getFriends().addAll(legacyFriends);
+            }
+        }
+
+        return result;
     }
 
     /** 删除好友（双向删除好友关系） @param currentUserId 当前用户ID @param friendId 好友ID */

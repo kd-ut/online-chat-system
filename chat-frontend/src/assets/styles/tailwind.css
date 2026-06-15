@@ -1,0 +1,16 @@
+/**
+ * Tailwind CSS 入口文件
+ * 通过 Vite 插件 @tailwindcss/vite 编译
+ * 使用 important: ':root' 策略隔离 Element Plus 样式
+ */
+@import 'tailwindcss';
+
+/* 桥接 CSS 变量到 Tailwind 主题，可在项目中使用 utility class */
+@theme {
+  --color-primary: var(--color-primary);
+  --color-primary-light: var(--color-primary-light);
+  --color-primary-dark: var(--color-primary-dark);
+  --color-success: var(--color-success);
+  --color-warning: var(--color-warning);
+  --color-danger: var(--color-danger);
+}

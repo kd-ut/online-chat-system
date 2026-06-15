@@ -26,6 +26,10 @@ class WebSocketService {
   private friendRequestCallbacks: MessageCallback[] = []
   /** 好友请求处理结果回调列表 */
   private friendRequestHandledCallbacks: MessageCallback[] = []
+  /** 撤回消息回调列表 */
+  private recallCallbacks: MessageCallback[] = []
+  /** 群撤回消息回调列表 */
+  private groupRecallCallbacks: MessageCallback[] = []
 
   /** 是否已连接 @returns 连接状态 */
   isConnected(): boolean {
@@ -60,9 +64,13 @@ class WebSocketService {
 
       if (data.type === 'message' || data.type === 'impression') {
         this.messageCallbacks.forEach(cb => cb(data))
+      } else if (data.type === 'message_sent') {
+        this.messageCallbacks.forEach(cb => cb(data))
       } else if (data.type === 'status') {
         this.statusCallbacks.forEach(cb => cb(data))
       } else if (data.type === 'group_message') {
+        this.groupMessageCallbacks.forEach(cb => cb(data))
+      } else if (data.type === 'group_message_sent') {
         this.groupMessageCallbacks.forEach(cb => cb(data))
       } else if (data.type === 'call') {
         this.callSignalCallbacks.forEach(cb => cb(data))
@@ -72,6 +80,10 @@ class WebSocketService {
         this.friendRequestCallbacks.forEach(cb => cb(data))
       } else if (data.type === 'friend_request_handled') {
         this.friendRequestHandledCallbacks.forEach(cb => cb(data))
+      } else if (data.type === 'recall') {
+        this.recallCallbacks.forEach(cb => cb(data))
+      } else if (data.type === 'group_recall') {
+        this.groupRecallCallbacks.forEach(cb => cb(data))
       }
     }
 
@@ -112,8 +124,8 @@ class WebSocketService {
     }
   }
 
-  /** 发送单聊消息 @param toUserId 目标用户ID @param content 消息内容 @param messageType 消息类型 @param duration 语音时长（仅语音消息） */
-  sendMessage(toUserId: number, content: string, messageType: number = 1, duration?: number) {
+  /** 发送单聊消息 @param toUserId 目标用户ID @param content 消息内容 @param messageType 消息类型 @param duration 语音时长（仅语音消息） @param replyToId 引用的消息ID（可选） */
+  sendMessage(toUserId: number, content: string, messageType: number = 1, duration?: number, replyToId?: number) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const message: any = {
         type: 'message',
@@ -124,6 +136,9 @@ class WebSocketService {
       if (duration !== undefined && messageType === 4) {
         message.duration = duration
       }
+      if (replyToId !== undefined) {
+        message.replyToId = replyToId
+      }
       console.log('发送消息:', message)
       this.ws.send(JSON.stringify(message))
     } else {
@@ -131,15 +146,19 @@ class WebSocketService {
     }
   }
 
-  /** 发送群消息 @param groupId 群ID @param content 消息内容 @param messageType 消息类型 */
-  sendGroupMessage(groupId: number, content: string, messageType: number = 1) {
+  /** 发送群消息 @param groupId 群ID @param content 消息内容 @param messageType 消息类型 @param replyToId 引用的消息ID（可选） */
+  sendGroupMessage(groupId: number, content: string, messageType: number = 1, replyToId?: number) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
+      const message: any = {
         type: 'group_message',
         groupId: groupId,
         content: content,
         messageType: messageType
-      }))
+      }
+      if (replyToId !== undefined) {
+        message.replyToId = replyToId
+      }
+      this.ws.send(JSON.stringify(message))
     } else {
       console.warn('WebSocket未连接')
     }
@@ -195,6 +214,18 @@ class WebSocketService {
   onFriendRequestHandled(callback: MessageCallback) {
     this.friendRequestHandledCallbacks.push(callback)
     return () => { this.friendRequestHandledCallbacks = this.friendRequestHandledCallbacks.filter(cb => cb !== callback) }
+  }
+
+  /** 注册撤回消息回调 @param callback 回调函数 @returns 取消注册的函数 */
+  onRecall(callback: MessageCallback) {
+    this.recallCallbacks.push(callback)
+    return () => { this.recallCallbacks = this.recallCallbacks.filter(cb => cb !== callback) }
+  }
+
+  /** 注册群撤回消息回调 @param callback 回调函数 @returns 取消注册的函数 */
+  onGroupRecall(callback: MessageCallback) {
+    this.groupRecallCallbacks.push(callback)
+    return () => { this.groupRecallCallbacks = this.groupRecallCallbacks.filter(cb => cb !== callback) }
   }
 
   /** 断开连接 */

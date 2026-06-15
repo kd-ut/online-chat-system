@@ -82,7 +82,12 @@ public class OssUtil {
      */
     public String uploadFile(MultipartFile file, String folder, String oldFileUrl) throws IOException {
         if (ossEnabled) {
-            return uploadToOss(file, folder);
+            try {
+                return uploadToOss(file, folder);
+            } catch (Exception e) {
+                log.error("OSS上传失败，回退到本地存储: {}", e.getMessage());
+                return uploadToLocal(file, folder);
+            }
         }
         return uploadToLocal(file, folder);
     }
@@ -101,7 +106,7 @@ public class OssUtil {
 
         String dir = folder + LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy/MM"));
         String originalFilename = file.getOriginalFilename();
-        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+        String extension = originalFilename != null ? originalFilename.substring(originalFilename.lastIndexOf(".")) : "";
         String newFileName = UUID.randomUUID() + extension;
         String objectName = dir + "/" + newFileName;
 

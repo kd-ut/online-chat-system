@@ -27,7 +27,7 @@ public class MessageVO {
     private Long toUserId;
     /** 接收方昵称 */
     private String toUserNickname;
-    /** 消息类型：1-文字，2-图片，3-系统消息/评价通知 */
+    /** 消息类型：1-文字，2-图片，3-文件，4-语音，5-语音通话，6-视频通话 */
     private Integer messageType;
     /** 消息内容 */
     private String content;
@@ -37,4 +37,18 @@ public class MessageVO {
     private Boolean isRecalled;
     /** 发送时间 */
     private LocalDateTime sendTime;
+    /** 引用的消息ID */
+    private Long replyToId;
+    /** 被引用的消息信息 */
+    private RepliedMessageInfo repliedMessage;
+
+    @Data
+    @Builder
+    public static class RepliedMessageInfo {
+        private Long messageId;
+        private String content;
+        private String fromUserNickname;
+        /** 消息类型 */
+        private Integer messageType;
+    }
 }

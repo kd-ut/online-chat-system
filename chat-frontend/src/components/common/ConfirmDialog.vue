@@ -65,5 +65,5 @@ const handleCancel = () => { emit('cancel'); visible.value = false }
 
 <style scoped>
 .confirm-icon :deep(.el-icon) { display: flex; }
-.confirm-message { max-width: 300px; }
+.confirm-message { max-width: 340px; }
 </style>

@@ -1,15 +1,20 @@
 <template>
   <div class="empty-container">
     <div class="empty-content">
-      <div class="empty-icon" v-if="icon">
-        <component :is="icon" :size="size" />
-      </div>
-      <div v-else class="empty-default-icon">
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M32 4C16.5 4 4 16.5 4 32C4 47.5 16.5 60 32 60C47.5 60 60 47.5 60 32C60 16.5 47.5 4 32 4Z"
-            fill="#E8ECF0" />
-          <path d="M32 20V36M32 44H32.01" stroke="#909399" stroke-width="2" stroke-linecap="round" />
-        </svg>
+      <div class="empty-illustration">
+        <div class="empty-icon" v-if="icon">
+          <component :is="icon" :size="size" />
+        </div>
+        <div v-else class="empty-default-icon">
+          <svg width="80" height="80" viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="40" cy="40" r="36" fill="var(--color-primary-light-1)" />
+            <circle cx="40" cy="40" r="36" fill="var(--color-primary)" opacity="0.04" />
+            <rect x="22" y="32" width="36" height="24" rx="6" fill="var(--color-primary-light-3)" />
+            <circle cx="34" cy="44" r="3" fill="var(--color-primary)" opacity="0.5" />
+            <circle cx="40" cy="44" r="3" fill="var(--color-primary)" opacity="0.5" />
+            <circle cx="46" cy="44" r="3" fill="var(--color-primary)" opacity="0.5" />
+          </svg>
+        </div>
       </div>
       <div class="empty-title">{{ title }}</div>
       <div v-if="description" class="empty-description">{{ description }}</div>
@@ -29,7 +34,7 @@ withDefaults(defineProps<{
   size?: number
 }>(), {
   title: '暂无数据',
-  size: 48
+  size: 40
 })
 </script>
 
@@ -46,31 +51,30 @@ withDefaults(defineProps<{
   animation: fadeInUp 0.4s ease;
 }
 
-@keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+.empty-illustration {
+  margin-bottom: 20px;
 }
 
 .empty-default-icon {
-  margin-bottom: 20px;
-  opacity: 0.5;
+  display: inline-block;
+  opacity: 0.7;
   transition: transform 0.3s ease;
 }
 
 .empty-container:hover .empty-default-icon {
-  transform: scale(1.1) rotate(-3deg);
+  transform: scale(1.05);
 }
 
 .empty-title {
   font-size: 15px;
   font-weight: 600;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .empty-description {
   font-size: 13px;
-  color: var(--text-secondary);
+  color: var(--text-placeholder);
   margin-top: 4px;
 }
 

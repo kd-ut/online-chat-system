@@ -28,4 +28,6 @@ public class GroupMessage {
     private LocalDateTime sendTime;
     /** 撤回时间，为空表示未撤回 */
     private LocalDateTime recallTime;
+    /** 引用的消息ID（回复功能） */
+    private Long replyToId;
 }

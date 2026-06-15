@@ -22,6 +22,9 @@
         <VoiceMessage v-else-if="message.messageType === 4" :url="message.content" :duration="message.duration"
           :message-id="message.id" />
 
+        <CallRecord v-else-if="message.messageType === 5 || message.messageType === 6"
+          :call-type="message.messageType === 5 ? 'voice' : 'video'" :duration="message.content" />
+
         <span v-else>{{ message.content }}</span>
       </div>
     </div>
@@ -35,6 +38,7 @@ import defaultAvatar from '@/assets/images/default-avatar.png'
 import TextMessage from '../messageBubble/TextMessage.vue'
 import ImageMessage from '../messageBubble/ImageMessage.vue'
 import VoiceMessage from '../messageBubble/VoiceMessage.vue'
+import CallRecord from '../messageBubble/CallRecord.vue'
 import RecalledMessage from '../messageBubble/RecalledMessage.vue'
 
 /** 组件属性：消息对象、是否本人发送、是否显示信息 */
